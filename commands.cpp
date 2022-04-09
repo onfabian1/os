@@ -122,36 +122,30 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 // Returns: void
 //**************************************************************************************
 
-void ExeExternal(char *args[MAX_ARG], char* cmdString)
+void ExeExternal(char* args[MAX_ARG], char* cmdString)
 {
 	int pID;
+	int status;
     	switch(pID = fork()) 
 	{
     		case -1 : 
 			// Error 
 			perror("smash error: fork failed");
-
+			exit(1);
 
         	case 0 :
                 	// Child Process
                		setpgrp();
-			execv(cmdstring)
-					
-			        // Add your code here (execute an external command)
-					
-					/* 
-					your code
-					*/
+			execvp(cmdString, args);
+			perror("smash error: execv failed");
+			kill(getpid(), SIGKILL);
 
+		default:
+                	// Parent process
+			while (wait(&status) != pID);
 			
-			//default:
-                	// Add your code here
-					
-					/* 
-					your code
-					*/
-	//}
-//}
+	}
+}
 //**************************************************************************************
 // function name: ExeComp
 // Description: executes complicated command
