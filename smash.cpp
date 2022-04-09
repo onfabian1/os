@@ -17,7 +17,7 @@ main file. This file contains the main function of smash
 using namespace std;
 
 char* L_Fg_Cmd;
-void* jobs = NULL; //This represents the list of jobs. Please change to a preferred type (e.g array of char*)
+char** jobs = NULL; //This represents the list of jobs. Please change to a preferred type (e.g array of char*)
 char lineSize[MAX_LINE_SIZE]; 
 //**************************************************************************************
 // function name: main
