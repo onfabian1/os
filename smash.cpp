@@ -5,11 +5,12 @@ main file. This file contains the main function of smash
 #include <sys/wait.h>
 #include <unistd.h> 
 #include <stdio.h>
+#include <vector>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
-#include <iostream>
 #include "commands.h"
+#include <iostream>
 #include "signals.h"
 #define MAX_LINE_SIZE 80
 #define MAXARGS 20
@@ -17,7 +18,7 @@ main file. This file contains the main function of smash
 using namespace std;
 
 char* L_Fg_Cmd;
-char** jobs = NULL; //This represents the list of jobs. Please change to a preferred type (e.g array of char*)
+vector<Job> jobs; //This represents the list of jobs. Please change to a preferred type (e.g array of char*)
 char lineSize[MAX_LINE_SIZE]; 
 //**************************************************************************************
 // function name: main
