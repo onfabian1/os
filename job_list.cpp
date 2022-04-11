@@ -9,5 +9,7 @@ JobList::JobList() {
 JobList::~JobList() {}
 
 void JobList::print_list() {
+	
+	}
 
 	

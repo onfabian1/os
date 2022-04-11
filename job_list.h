@@ -3,14 +3,14 @@
 #include "job.h"
 #include "string.h"
 #include <time.h>
-#include <sys/typed.h>
+//#include <sys/typed.h>
 #include <sys/wait.h>
 #include <cstdbool>
 #include <list>
 #include <iostream>
 #include <signal.h>
 
-using namespace std
+using namespace std;
 
 class JobList {
 	public:

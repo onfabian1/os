@@ -3,7 +3,7 @@ using namespace std;
 
 Job::Job(string job_name, int job_id, pid_t job_pid, time_t job_time): job_name(job_name), job_id(job_id), job_pid(job_pid), job_time(job_time)
 	{
-		//job_name += '\0';
+		job_name += '\0';
 		stopped = false;
 	}
 
@@ -17,6 +17,11 @@ void Job::stop_job()
 
 void Job::print_job()
 	{
-		cout << job_id << job_name << ":" << job_pid << job_time << endl;
+		if (stopped)
+		{
+			cout << "[" << job_id << "]" << job_name << ":" << job_pid << job_time << "(stopped)" << endl;
+		}
+		else
+			cout << "[" << job_id << "]" << job_name << ":" << job_pid << job_time << endl;
 	}
 

@@ -2,6 +2,7 @@
 //********************************************
 #include "commands.h"
 #include <iostream>
+#include <fstream>
 //********************************************
 // function name: ExeCmd
 // Description: interperts and executes built-in commands
@@ -99,8 +100,61 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 	/*************************************************/
 	else if (!strcmp(cmd, "quit"))
 	{
-   		
+		if (num_arg == 0)
+		{
+			exit(0);
+		}
+		 else if(!strcmp(args[1], "kill"))
+		{
+   			cout << "kill" << endl;
+			// kill all jobs
+		}
+		else 
+		{
+			cout << "smash error: " << cmd << ": too many arguments" << endl;
+			return 1;
+		}
+		
+			
 	} 
+
+	/*************************************************/
+	else if (!strcmp(cmd, "diff"))
+	{
+		if (num_arg != 2)
+		{
+			cout << "smash error: " << cmd << ": invalid arguments" << endl;
+			return 1;	
+		}
+		char c1, c2;
+		ifstream fd1, fd2;
+		fd1.open(args[1]);
+		fd2.open(args[2]);
+		while(!fd1.eof() && !fd2.eof())
+		{
+			if (fd1.eof() || fd2.eof())
+			{ // files are not the same size
+				cout << "1" << endl;
+				fd1.close();
+				fd2.close();
+				return 1;
+			}
+			fd1.get(c1);
+			fd2.get(c2);
+			if (c1 != c2)
+			{ // files are not equal
+				cout << "1" << endl;
+				fd1.close();
+				fd2.close();
+				return 1;
+			}
+		} // files are identical
+		fd1.close();
+		fd2.close();
+		cout << "0" << endl;
+		return 0;
+
+	}
 	/*************************************************/
 	else // external command
 	{
@@ -136,7 +190,8 @@ void ExeExternal(char* args[MAX_ARG], char* cmdString)
         	case 0 :
                 	// Child Process
                		setpgrp();
-			execvp(cmdString, args);
+			execvp(args[0], args);
+			cout << "arg1: " << args[1] << endl;
 			perror("smash error: execv failed");
 			kill(getpid(), SIGKILL);
 
