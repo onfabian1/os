@@ -16,6 +16,7 @@
 
 using namespace std;
 
+extern pid_t curr_fg_pid;
 int counter = 0;
 char prevDir[MAX_LINE_SIZE];
 
@@ -45,6 +46,7 @@ void Job::print_job(time_t time)
 
 int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 {
+	curr_fg_pid = getpid();
 	char* cmd; 
 	char* args[MAX_ARG];
 	char pwd[MAX_LINE_SIZE];
@@ -131,6 +133,7 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 	/*************************************************/
 	else if (!strcmp(cmd, "fg")) 
 	{
+		
 		
 	} 
 	/*************************************************/
@@ -220,7 +223,7 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 void ExeExternal(char* args[MAX_ARG], char* cmdString, int num_arg, vector<Job> &jobs) {
 
 	int pID;
-	bool flag = false;
+	bool flag = true;
 	int status;
     	switch(pID = fork()) 
 	{
@@ -234,16 +237,20 @@ void ExeExternal(char* args[MAX_ARG], char* cmdString, int num_arg, vector<Job> 
                		setpgrp();
 			execvp(args[0], args);
 			perror("smash error: execv failed");
-			kill(getpid(), SIGKILL);
+			if(!!kill(getpid(), SIGKILL))
+			{
+				perror("smash error: kill failed");
+				exit(1);
+			}
 
 		default:
                 	// Parent process
-			if (!BgCmd(args[num_arg], jobs))
-			{
-				// added job to jobs
-				flag = true;
+			curr_fg_pid = pID;
+			if (!BgCmd(args, jobs, pID, num_arg))
+			{					
+				flag = false;
 			}
-			while (wait(&status) != pID || flag);
+			while (wait(&status) != pID && flag);
 			
 	}
 }
@@ -275,16 +282,18 @@ int ExeComp(char* lineSize)
 // Parameters: command string, pointer to jobs
 // Returns: 0- BG command -1- if not
 //**************************************************************************************
-int BgCmd(char* lineSize, vector<Job> &jobs)
+int BgCmd(char* args[MAX_ARG], vector<Job> &jobs, int pID, int num_arg)
 {
 
 	//char* Command;
 	//char const* delimiters = " \t\n";
 	//char *args[MAX_ARG];
+	char *lineSize = args[num_arg];
 	if (lineSize[strlen(lineSize)-2] == '&')
 	{
 		lineSize[strlen(lineSize)-2] = '\0';
-		// Add your code here (execute a in the background)
+		Job new_job(args[0], jobs.size(), pID, time(NULL));
+		jobs.push_back(new_job);
 		return 0;
 		
 	}

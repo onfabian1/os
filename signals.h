@@ -9,6 +9,9 @@
 #include <signal.h>
 
 
+void sigintHandler(int sig_num);
+void sigstopHandler(int sig_num);
+
 
 #endif
 

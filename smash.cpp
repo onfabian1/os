@@ -17,7 +17,11 @@ main file. This file contains the main function of smash
 
 using namespace std;
 
+int curr_id;
 char* L_Fg_Cmd;
+string fg_name;
+pid_t curr_fg_pid;
+pid_t smash_pid;
 vector<Job> jobs; //This represents the list of jobs. Please change to a preferred type (e.g array of char*)
 char lineSize[MAX_LINE_SIZE]; 
 //**************************************************************************************
@@ -26,23 +30,19 @@ char lineSize[MAX_LINE_SIZE];
 //**************************************************************************************
 int main(int argc, char *argv[])
 {
-    char cmdString[MAX_LINE_SIZE]; 	   
-
+	char cmdString[MAX_LINE_SIZE]; 	   
+	smash_pid = getpid();
 	
 	//signal declaretions
 	//NOTE: the signal handlers and the function/s that sets the handler should be found in siganls.c
-	 /* add your code here */
-	
-	/************************************/
-	//NOTE: the signal handlers and the function/s that sets the handler should be found in siganls.c
-	//set your signal handlers here
-	/* add your code here */
+        struct sigaction sigint_hand;
+        sigint_hand.sa_handler = &sigintHandler;
 
-	/************************************/
-
-	/************************************/
+        struct sigaction sigstop_hand;
+        sigstop_hand.sa_handler = &sigstopHandler;
+    	
 	// Init globals 
-
+        curr_fg_pid = smash_pid;
 
 	
 	L_Fg_Cmd =(char*)malloc(sizeof(char)*(MAX_LINE_SIZE+1));
@@ -52,6 +52,9 @@ int main(int argc, char *argv[])
 	
     	while (1)
     	{
+    	        curr_fg_pid = smash_pid;
+    	        sigaction(SIGINT, &sigint_hand, NULL);
+    	        sigaction(SIGTSTP, &sigstop_hand, NULL);
 	 	cout << "smash > ";
 		fgets(lineSize, MAX_LINE_SIZE, stdin);
 		strcpy(cmdString, lineSize);    	

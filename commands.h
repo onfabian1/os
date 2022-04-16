@@ -31,7 +31,7 @@ class Job {
 };
 
 int ExeComp(char* lineSize);
-int BgCmd(char* lineSize, vector<Job> &jobs);
+int BgCmd(char* args[MAX_ARG], vector<Job> &jobs, pid_t pid, int num_arg);
 int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString);
 void ExeExternal(char *args[MAX_ARG], char* cmdString, int num_args, vector<Job>& jobs);
 
