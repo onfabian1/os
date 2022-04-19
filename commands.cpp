@@ -35,13 +35,13 @@ void Job::stop_job()
 
 void Job::print_job(time_t time)
 	{
-		double time_tot = difftime(_time, time);
+		double time_tot = difftime(time, _time);
 		if (_stopped)
 		{
-			cout << "[" << _id << "]" << _name << ":" << _pid << " " << time_tot << " (stopped)" << endl;
+			cout << "[" << _id << "]" << _name << ":" << _pid << " " << time_tot << " secs " << " (stopped)" << endl;
 		}
 		else
-			cout << "[" << _id << "] " << _name << " : " << _pid << " " << time_tot << endl;
+			cout << "[" << _id << "] " << _name << " : " << _pid << " " << time_tot <<" secs " << endl;
 	}
 
 int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
@@ -115,14 +115,19 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 	{
 		if (!jobs.empty())
 		{
-			for (Job &iterator : jobs) 
-			{
+			vector<Job>::iterator it;
+			for(it = jobs.begin(); it!=jobs.end(); ++it){
+				time_t curr_time = time(NULL);
+				it->print_job(curr_time);
+			}
+			//for (Job &iterator : jobs) 
+			//{
 				// check w/ func delete_job if job is already finished
 				// continue
-	 			time_t curr_time = time(NULL);
-				cout << "inside for iterator" << endl;
-				iterator.print_job(curr_time);
-			}
+	 		//	time_t curr_time = time(NULL);
+				//cout << "inside for iterator" << endl;
+			//	iterator.print_job(curr_time);
+			//}
 		}
 	}
 	/*************************************************/
@@ -223,8 +228,9 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 void ExeExternal(char* args[MAX_ARG], char* cmdString, int num_arg, vector<Job> &jobs) {
 
 	int pID;
-	bool flag = true;
-	int status;
+	//bool flag = true;
+	//int status;
+	char *lineSize = args[num_arg];
     	switch(pID = fork()) 
 	{
     		case -1 : 
@@ -232,9 +238,12 @@ void ExeExternal(char* args[MAX_ARG], char* cmdString, int num_arg, vector<Job> 
 			perror("smash error: fork failed");
 			exit(1);
 
-        	case 0 :
-                	// Child Process
+        	case 0 :// Child Process
                		setpgrp();
+			if (lineSize[strlen(lineSize)-1] == '&'){
+				lineSize[strlen(lineSize)-1] = '\0';
+				args[num_arg]=NULL;
+			}
 			execvp(args[0], args);
 			perror("smash error: execv failed");
 			if(!!kill(getpid(), SIGKILL))
@@ -244,13 +253,16 @@ void ExeExternal(char* args[MAX_ARG], char* cmdString, int num_arg, vector<Job> 
 			}
 
 		default:
-                	// Parent process
-			curr_fg_pid = pID;
-			if (!BgCmd(args, jobs, pID, num_arg))
-			{					
-				flag = false;
+			if (lineSize[strlen(lineSize)-1] == '&'){
+				BgCmd(args, jobs, pID, num_arg);
 			}
-			while (wait(&status) != pID && flag);
+			else{
+			//flag = false;
+			curr_fg_pid = pID;
+			}
+                	// Parent process
+
+			waitpid(pID, NULL, WUNTRACED);
 			
 	}
 }
@@ -289,9 +301,9 @@ int BgCmd(char* args[MAX_ARG], vector<Job> &jobs, int pID, int num_arg)
 	//char const* delimiters = " \t\n";
 	//char *args[MAX_ARG];
 	char *lineSize = args[num_arg];
-	if (lineSize[strlen(lineSize)-2] == '&')
+	if (lineSize[strlen(lineSize)-1] == '&')
 	{
-		lineSize[strlen(lineSize)-2] = '\0';
+		lineSize[strlen(lineSize)-1] = '\0';
 		Job new_job(args[0], jobs.size(), pID, time(NULL));
 		jobs.push_back(new_job);
 		return 0;
