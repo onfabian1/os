@@ -27,6 +27,22 @@ Job::Job(string job_name, int job_id, pid_t job_pid, time_t job_time): _name(job
 		_stopped = false;
 	}
 
+void DelFinJobs(vector<Job> &jobs){
+	//cout << jobs.empty()<< " " << jobs.size() << endl;
+	int counter = 0;
+	if (!jobs.empty()){
+
+		vector<Job>::iterator it;
+		for(it = jobs.begin(); it!=jobs.end(); ++it){
+			if(waitpid(it->_pid, NULL, WNOHANG)){
+			jobs.erase(it);
+			cout<< "yes"<< endl;
+			counter++;
+			}
+		}
+	}
+}
+
 void Job::stop_job()
 	{
 		_stopped = true;
@@ -64,6 +80,7 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 			num_arg++; 
  
 	}
+	//DelFinJobs(jobs);
 /*************************************************/
 // Built in Commands PLEASE NOTE NOT ALL REQUIRED
 // ARE IN THIS CHAIN OF IF COMMANDS. PLEASE ADD
@@ -254,15 +271,15 @@ void ExeExternal(char* args[MAX_ARG], char* cmdString, int num_arg, vector<Job> 
 
 		default:
 			if (lineSize[strlen(lineSize)-1] == '&'){
-				BgCmd(args, jobs, pID, num_arg);
+				return;
 			}
 			else{
 			//flag = false;
 			curr_fg_pid = pID;
+			waitpid(pID, NULL, WUNTRACED);
 			}
                 	// Parent process
 
-			waitpid(pID, NULL, WUNTRACED);
 			
 	}
 }
@@ -303,8 +320,15 @@ int BgCmd(char* args[MAX_ARG], vector<Job> &jobs, int pID, int num_arg)
 	char *lineSize = args[num_arg];
 	if (lineSize[strlen(lineSize)-1] == '&')
 	{
+		int id;
+		if(jobs.empty()){ 
+			id = 1;
+		}
+		else{
+			id=jobs.back()._id+1;
+		} 
 		lineSize[strlen(lineSize)-1] = '\0';
-		Job new_job(args[0], jobs.size(), pID, time(NULL));
+		Job new_job(args[0], id, pID, time(NULL));
 		jobs.push_back(new_job);
 		return 0;
 		

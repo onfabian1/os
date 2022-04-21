@@ -14,9 +14,8 @@
 
 using namespace std;
 
-extern int curr_id;
 extern string fg_name;
-extern vector<Job> &jobs;
+extern vector<Job> jobs;
 extern pid_t smash_pid; 
 extern pid_t curr_fg_pid;
 
@@ -47,11 +46,10 @@ void sigintHandler(int sig_num)
 				}
 			}
 		}	*/
-		cout << "wtf im here" << endl;
 		if (!kill(curr_fg_pid, SIGKILL)) // process killed
 		{
 	
-			cout << "smash: process " << jobs.size() << " was killed" << endl;
+			cout << "smash: process " << curr_fg_pid << " was killed" << endl;
 			return;
 		}
 		else
@@ -66,39 +64,28 @@ void sigstopHandler(int sig_num)
 {
 	if (sig_num == SIGTSTP) //CTRL+Z
 	{
+		cout << "smash: caught ctrl-Z" << endl;
 	        if (curr_fg_pid == smash_pid) //smash pid
 		{
 	                return;
        		}	
-		unsigned int i = 0;
 		int id;
-		cout << "smash: caught ctrl-Z" << endl;
-		bool exist = false;
-		for(; i < jobs.size(); i++)
-		{
-			cout << "in stop finding job" << endl;
-			if (jobs[i]._pid == curr_fg_pid)
-			{
-				exist = true;
-				id = jobs[i]._id;
-				break;
-			}
-		}
-		cout << "stop - yes" << endl;
 		if (!kill(curr_fg_pid, SIGSTOP))
 		{
-			cout << "smash: process " << id << " was stopped" << endl;
-			if (exist)
+			cout << "smash: process " << curr_fg_pid << " was stopped" << endl;
+			if (jobs.empty())
 			{
-				jobs[i]._stopped = true;			
-				return;
+				id = 1;
 			}
 			else
 			{
-				Job new_job(fg_name, jobs.size(), curr_fg_pid, time(NULL));
-				jobs.push_back(new_job);
-         			jobs[jobs.size()-1]._stopped = TRUE;	
+				id = jobs.back()._id + 1;
 			}
+			Job new_job(fg_name, id, curr_fg_pid, time(NULL));
+			new_job._stopped = true;
+			jobs.push_back(new_job);
+         		//jobs[jobs.size()-1]._stopped = true;				
+			return;
 		}
 		else
 		{

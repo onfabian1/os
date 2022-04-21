@@ -17,7 +17,6 @@ main file. This file contains the main function of smash
 
 using namespace std;
 
-int curr_id;
 char* L_Fg_Cmd;
 string fg_name;
 pid_t curr_fg_pid;
@@ -43,7 +42,6 @@ int main(int argc, char *argv[])
     	
 	// Init globals 
         curr_fg_pid = smash_pid;
-
 	
 	L_Fg_Cmd =(char*)malloc(sizeof(char)*(MAX_LINE_SIZE+1));
 	if (L_Fg_Cmd == NULL) 
@@ -59,6 +57,7 @@ int main(int argc, char *argv[])
 		fgets(lineSize, MAX_LINE_SIZE, stdin);
 		strcpy(cmdString, lineSize);    	
 		cmdString[strlen(lineSize)-1]='\0';
+		fg_name = cmdString;
 					// perform a complicated Command
 		//if(!ExeComp(lineSize)) continue; 
 					// background command	
