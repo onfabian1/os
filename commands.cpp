@@ -17,6 +17,7 @@
 using namespace std;
 
 extern pid_t curr_fg_pid;
+extern string fg_name;
 int counter = 0;
 char prevDir[MAX_LINE_SIZE];
 
@@ -29,18 +30,12 @@ Job::Job(string job_name, int job_id, pid_t job_pid, time_t job_time): _name(job
 
 void DelFinJobs(vector<Job> &jobs){
 	//cout << jobs.empty()<< " " << jobs.size() << endl;
-	int counter = 0;
-	if (!jobs.empty()){
-
-		vector<Job>::iterator it;
-		for(it = jobs.begin(); it!=jobs.end(); ++it){
-			if(waitpid(it->_pid, NULL, WNOHANG)){
-			jobs.erase(it);
-			cout<< "yes"<< endl;
-			counter++;
-			}
-		}
+	for (unsigned int i = 0; i < jobs.size(); i++) {
+        	if (waitpid(jobs[i]._pid, NULL, WNOHANG) != 0) {
+            	jobs.erase(jobs.begin() + i);
+       		}
 	}
+   
 }
 
 void Job::stop_job()
@@ -80,7 +75,7 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 			num_arg++; 
  
 	}
-	//DelFinJobs(jobs);
+	DelFinJobs(jobs);
 /*************************************************/
 // Built in Commands PLEASE NOTE NOT ALL REQUIRED
 // ARE IN THIS CHAIN OF IF COMMANDS. PLEASE ADD
@@ -137,14 +132,6 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 				time_t curr_time = time(NULL);
 				it->print_job(curr_time);
 			}
-			//for (Job &iterator : jobs) 
-			//{
-				// check w/ func delete_job if job is already finished
-				// continue
-	 		//	time_t curr_time = time(NULL);
-				//cout << "inside for iterator" << endl;
-			//	iterator.print_job(curr_time);
-			//}
 		}
 	}
 	/*************************************************/
@@ -271,7 +258,7 @@ void ExeExternal(char* args[MAX_ARG], char* cmdString, int num_arg, vector<Job> 
 
 		default:
 			if (lineSize[strlen(lineSize)-1] == '&'){
-				return;
+				BgCmd(args, jobs, pID, num_arg);
 			}
 			else{
 			//flag = false;
@@ -328,7 +315,7 @@ int BgCmd(char* args[MAX_ARG], vector<Job> &jobs, int pID, int num_arg)
 			id=jobs.back()._id+1;
 		} 
 		lineSize[strlen(lineSize)-1] = '\0';
-		Job new_job(args[0], id, pID, time(NULL));
+		Job new_job(fg_name, id, pID, time(NULL));
 		jobs.push_back(new_job);
 		return 0;
 		
