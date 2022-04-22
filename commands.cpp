@@ -18,7 +18,7 @@ using namespace std;
 
 extern pid_t curr_fg_pid;
 extern string fg_name;
-int counter = 0;
+bool is_prev = false;
 char prevDir[MAX_LINE_SIZE];
 
 
@@ -82,42 +82,55 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 /*************************************************/
 	if (!strcmp(cmd, "cd")) 
 	{
-		if (num_arg > 1)
-		{
+		char tmp[MAX_LINE_SIZE];
+		if (num_arg != 1) {
 			cout << "smash error: " << cmd << ": too many arguments" << endl;
 			return 1;
 		}
-		if (!strcmp(args[1],"-"))
-		{
-			if (!counter)
-			{
+		if (!strcmp(args[1],"-")) {
+			if (!is_prev) {
 				cout << "smash error: " << cmd << ": OLDPWD not set" << endl;
 				return 1;
 			}
-			else
-			{
-				if (!chdir(prevDir))
-				{
-					cout << prevDir << endl;
+			else {
+				if (getcwd(tmp, MAX_LINE_SIZE) == NULL) {
+					perror("smash error: getcwd failed");
+					exit(1);
+				}
+				if (chdir(prevDir)) {
+					perror("smash error: chdir failed)");
+					exit(1);
+				}
+				else {
+					strcpy(prevDir,tmp);
 					return 0;
 				}
 			}
 		}
-		else if (num_arg == 1)
-		{
-			getcwd(prevDir, MAX_LINE_SIZE);
-			if (!chdir(args[1]))
-			{
-				counter++;
-				return 0;
-			}
+		if (getcwd(prevDir, MAX_LINE_SIZE) == NULL) {
+			perror("smash error: getcwd failed");
+			exit(1);
+		}
+		else {
+		strcpy(tmp, prevDir);
+		}
+		if (chdir(args[1])) {
+			perror("smash error: chdir failed");
+			exit(1);
+		}
+		else {
+			is_prev = true;
+			return 0;
 		}
 	} 
 	
 	/*************************************************/
 	else if (!strcmp(cmd, "pwd")) 
 	{
-		getcwd(pwd, MAX_LINE_SIZE);
+		if (getcwd(pwd, MAX_LINE_SIZE) == NULL) {
+			perror("smash error: getcwd failed");
+			exit(1);
+		}
 		cout << pwd << endl;
 	}
 
