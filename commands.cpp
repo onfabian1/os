@@ -29,7 +29,6 @@ Job::Job(string job_name, int job_id, pid_t job_pid, time_t job_time): _name(job
 	}
 
 void DelFinJobs(vector<Job> &jobs){
-	//cout << jobs.empty()<< " " << jobs.size() << endl;
 	for (unsigned int i = 0; i < jobs.size(); i++) {
         	if (waitpid(jobs[i]._pid, NULL, WNOHANG) != 0) {
             	jobs.erase(jobs.begin() + i);
@@ -159,8 +158,44 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 		}
 		 else if(!strcmp(args[1], "kill"))
 		{
-   			cout << "kill" << endl;
-			// kill all jobs
+			if (!jobs.empty()) {
+				pid_t pid;
+				double time_tot;
+				vector<Job>::iterator it;
+				for(it = jobs.begin(); it!=jobs.end(); ++it) {
+					time_t stop_time = time(NULL);
+					time_t start_time = time(NULL);
+					cout << "[" << it->_id << "] " << it->_name << " - " << "Sending SIGTERM...";
+					if(!!kill(it->_pid, SIGTERM)) {
+						perror("smash error: kill failed");
+						exit(1);
+					}
+					while(1) {
+						time_tot = difftime(stop_time, start_time);
+						if (time_tot >= 5) {
+							if (!!kill(it->_pid, SIGKILL)) {
+								perror("smash error: kill failed");
+								exit(1);
+							}
+							cout << " (5 sec passed) Sending SIGKILL... Done" << endl;
+							break;
+						}
+						pid = waitpid(it->_pid, NULL, WNOHANG);
+						if (pid == -1) {
+							perror("smash error: waitpid failed");
+							exit(1);
+						}
+						else if (pid == 0) {
+							stop_time = time(NULL);
+						}
+						else {
+							cout << " Done" << endl;
+							break;
+						}
+					}
+				}
+			}
+			exit(0);
 		}
 		else 
 		{
@@ -270,28 +305,6 @@ void ExeExternal(char* args[MAX_ARG], char* cmdString, int num_arg, vector<Job> 
 			
 	}
 }
-//**************************************************************************************
-// function name: ExeComp
-// Description: executes complicated command
-// Parameters: command string
-// Returns: 0- if complicated -1- if not
-//**************************************************************************************
-/*
-int ExeComp(char* lineSize)
-{
-	char ExtCmd[MAX_LINE_SIZE+2];
-	char *args[MAX_ARG];
-    if ((strstr(lineSize, "|")) || (strstr(lineSize, "<")) || (strstr(lineSize, ">")) || (strstr(lineSize, "*")) || (strstr(lineSize, "?")) || (strstr(lineSize, ">>")) || (strstr(lineSize, "|&")))
-    {
-		// Add your code here (execute a complicated command)
-					
-		
-		
-		
-	} 
-	return -1;
-}
-*/
 //**************************************************************************************
 // function name: BgCmd
 // Description: if command is in background, insert the command to jobs
