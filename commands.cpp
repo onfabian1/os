@@ -27,7 +27,7 @@ Job::Job(string job_name, int job_id, pid_t job_pid, time_t job_time): _name(job
 		// _name += '\0';
 		_stopped = false;
 	}
-
+			
 void DelFinJobs(vector<Job> &jobs){
 	for (unsigned int i = 0; i < jobs.size(); i++) {
         	if (waitpid(jobs[i]._pid, NULL, WNOHANG) != 0) {
@@ -119,6 +119,42 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 	{
 		getcwd(pwd, MAX_LINE_SIZE);
 		cout << pwd << endl;
+	}
+
+	/*************************************************/
+	else if (!strcmp(cmd, "kill")) 
+	{ 
+		if (num_arg != 2) {
+			cout << "smash error: kill: invalid arguments" << endl;
+			return 1;
+		}
+		pid_t pid;
+		int signum = atoi(args[1] + 1);
+		int id = atoi(args[2]);
+		bool job_exist = false;
+		if ((args[1][0] != '-') || (signum > 64) || !id || id < 0 || !signum) {
+			cout << "smash error: kill: invalid arguments" << endl;
+			return 1;
+		}
+		if (!jobs.empty()) {
+			vector<Job>::iterator it;
+			for(it = jobs.begin(); it!=jobs.end(); ++it) {
+				if (it->_id == id) { 
+					job_exist = true;
+					pid = it->_pid;
+					break;
+				}
+			}
+		}
+		if (!job_exist) {
+			cout << "smash error: kill: job-id " << id << " does not exist" << endl;
+			return 1;
+		}	
+		if(!!kill(pid, signum)) {
+			perror("smash error: kill failed");
+			exit(1);
+		}	
+		return 0;
 	}
 	
 	/*************************************************/

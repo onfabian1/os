@@ -58,8 +58,6 @@ int main(int argc, char *argv[])
 		strcpy(cmdString, lineSize);    	
 		cmdString[strlen(lineSize)-1]='\0';
 		fg_name = cmdString;
-					// perform a complicated Command
-		//if(!ExeComp(lineSize)) continue; 
 					// background command	
 	 	//if(!BgCmd(lineSize, jobs)) continue; 
 					// built in commands

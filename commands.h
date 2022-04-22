@@ -30,6 +30,7 @@ class Job {
 		~Job(){};
 };
 
+void DelFinJobs(vector<Job> &jobs);
 int ExeComp(char* lineSize);
 int BgCmd(char* args[MAX_ARG], vector<Job> &jobs, pid_t pid, int num_arg);
 int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString);
