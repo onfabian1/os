@@ -190,13 +190,92 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 	/*************************************************/
 	else if (!strcmp(cmd, "fg")) 
 	{
-		
-		
+		if (!jobs.empty()){
+			if (num_arg > 1){
+			cout << "smash error: "<< cmd <<": invalid arguments" << endl;
+			return 1;
+			}
+			if(num_arg == 0){
+				cout << "[" << jobs.back()._id << "] " << jobs.back()._name << " : " << jobs.back()._pid << " " << difftime(time(NULL), jobs.back()._time) <<" secs " << endl;
+				kill(jobs.back()._pid, SIGCONT);
+				waitpid(jobs.back()._pid, NULL, WUNTRACED);
+				return 0;
+			}
+			else{
+				for (unsigned int i = 0; i < jobs.size(); i++) {
+        				if (jobs[i]._id == atoi(args[1])){
+					cout << "[" << jobs[i]._id << "] " << jobs[i]._name << " : " << jobs[i]._pid << " " << difftime(time(NULL), jobs[i]._time) <<" secs " << endl;
+            				kill(jobs[i]._pid, SIGCONT);
+					waitpid(jobs[i]._pid, NULL, WUNTRACED);
+					return 0;
+					}
+       				}
+				cout << "smash error: "<< cmd << ": job-id " << args[1] <<" does not exist" << endl;
+				return 1;
+			}
+				
+		}
+		else{
+			if(num_arg == 0){
+				cout << "smash error: "<< cmd <<": jobs list is empty" << endl;
+				return 1;
+			}		
+		}
 	} 
 	/*************************************************/
 	else if (!strcmp(cmd, "bg")) 
 	{
-  		
+		int max_id = 0;
+		int job_to_resume = 0;
+  		if (!jobs.empty()){
+			if (num_arg > 1){
+			cout << "smash error: "<< cmd <<": invalid arguments" << endl;
+			return 1;
+			}
+			else if(num_arg == 0){
+				for (unsigned int i = 0; i < jobs.size(); i++) {
+        				if (jobs[i]._id > max_id && jobs[i]._stopped){
+						max_id = jobs[i]._id;
+						job_to_resume = i;
+					}
+				}
+				if(max_id != 0){
+					jobs[job_to_resume]._stopped = false;
+					cout << "[" << jobs[job_to_resume]._id << "] " << jobs[job_to_resume]._name << " : " << jobs[job_to_resume]._pid << " " << difftime(time(NULL), jobs[job_to_resume]._time) <<" secs " << endl;
+					kill(jobs.back()._pid, SIGCONT);
+					return 0;
+				}
+				else{
+					cout << "smash error: " << cmd << ": there are no stopped jobs to resum" << endl;
+					return 1;
+				}
+			}
+			else{
+				for (unsigned int i = 0; i < jobs.size(); i++) {
+        				if (jobs[i]._id == atoi(args[1])){
+						if(jobs[i]._stopped){	
+							jobs[i]._stopped = false;
+							cout << "[" << jobs[i]._id << "] " << jobs[i]._name << " : " << jobs[i]._pid << " " << difftime(time(NULL), jobs[i]._time) <<" secs " << endl;
+			    				kill(jobs[i]._pid, SIGCONT);
+							return 0;
+						}
+						else{
+							cout << "smash error: " << cmd << ": job-id " << args[1] << "is already running in the background" << endl;
+					return 1;
+						}
+					}
+       				}
+				cout << "smash error: "<< cmd << ": job-id " << args[1] <<" does not exist" << endl;
+				return 1;
+			}
+				
+		}
+		else{
+			if(num_arg == 0){
+				cout << "smash error: "<< cmd <<": jobs list is empty" << endl;
+				return 1;
+			}		
+		}
 	}
 	/*************************************************/
 	else if (!strcmp(cmd, "quit"))
