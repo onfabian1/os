@@ -142,15 +142,15 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 			return 1;
 		}
 		pid_t pid;
+		vector<Job>::iterator it;
 		int signum = atoi(args[1] + 1);
 		int id = atoi(args[2]);
 		bool job_exist = false;
-		if ((args[1][0] != '-') || (signum > 64) || !id || id < 0 || !signum) {
+		if ((args[1][0] != '-') || (signum > 31) || !id || id < 0 || !signum) {
 			cout << "smash error: kill: invalid arguments" << endl;
 			return 1;
 		}
 		if (!jobs.empty()) {
-			vector<Job>::iterator it;
 			for(it = jobs.begin(); it!=jobs.end(); ++it) {
 				if (it->_id == id) { 
 					job_exist = true;
@@ -166,6 +166,9 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 		if(!!kill(pid, signum)) {
 			perror("smash error: kill failed");
 			exit(1);
+		}
+		if (signum == 19) { //SIGSTOP
+			it->_stopped = true;
 		}	
 		return 0;
 	}
@@ -411,7 +414,9 @@ void ExeExternal(char* args[MAX_ARG], char* cmdString, int num_arg, vector<Job> 
                		setpgrp();
 			if (lineSize[strlen(lineSize)-1] == '&'){
 				lineSize[strlen(lineSize)-1] = '\0';
-				args[num_arg]=NULL;
+				if (!strlen(args[num_arg])) {
+					args[num_arg]=NULL;
+				}
 			}
 			execvp(args[0], args);
 			perror("smash error: execv failed");
