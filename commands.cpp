@@ -48,7 +48,7 @@ void Job::print_job(time_t time)
 		double time_tot = difftime(time, _time);
 		if (_stopped)
 		{
-			cout << "[" << _id << "]" << _name << ":" << _pid << " " << time_tot << " secs " << " (stopped)" << endl;
+			cout << "[" << _id << "] " << _name << " : " << _pid << " " << time_tot << " secs " << "(stopped)" << endl;
 		}
 		else
 			cout << "[" << _id << "] " << _name << " : " << _pid << " " << time_tot <<" secs " << endl;
@@ -196,8 +196,8 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 			return 1;
 			}
 			if(num_arg == 0){
-				curr_fg_pid = jobs[i]._pid;
-				cout << "[" << jobs.back()._id << "] " << jobs.back()._name << " : " << jobs.back()._pid << " " << difftime(time(NULL), jobs.back()._time) <<" secs " << endl;
+				curr_fg_pid = jobs.back()._pid;
+				cout << jobs.back()._name << " : " << jobs.back()._pid << endl;
 				kill(jobs.back()._pid, SIGCONT);
 				waitpid(jobs.back()._pid, NULL, WUNTRACED);
 				return 0;
@@ -206,7 +206,7 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 				for (unsigned int i = 0; i < jobs.size(); i++) {
         				if (jobs[i]._id == atoi(args[1])){
 					curr_fg_pid = jobs[i]._pid;
-					cout << "[" << jobs[i]._id << "] " << jobs[i]._name << " : " << jobs[i]._pid << " " << difftime(time(NULL), jobs[i]._time) <<" secs " << endl;
+					cout << jobs[i]._name << " : " << jobs[i]._pid << endl;
             				kill(jobs[i]._pid, SIGCONT);
 					waitpid(jobs[i]._pid, NULL, WUNTRACED);
 					return 0;
