@@ -11,6 +11,7 @@
 #include <iostream>
 #include <csignal>
 #include <vector>
+#include <typeinfo>
 
 using namespace std;
 
@@ -83,7 +84,7 @@ void sigstopHandler(int sig_num)
 			}
 			char cmd[MAX_LINE_SIZE];
 			strcpy(cmd, fg_name.c_str());
-			bool is_fg_cmd = (!strcmp("fg", cmd) && !strcmp("g", cmd+1));
+			bool is_fg_cmd = (('f' == cmd[0]) && ('g' == cmd[1]));
 			if(!is_fg_cmd){
 				Job new_job(fg_name, id, curr_fg_pid, time(NULL));
 				new_job._stopped = true;
