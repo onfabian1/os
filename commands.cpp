@@ -202,17 +202,21 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 				curr_fg_pid = jobs.back()._pid;
 				cout << jobs.back()._name << " : " << jobs.back()._pid << endl;
 				kill(jobs.back()._pid, SIGCONT);
+				fg_name = jobs.back()._name;
+				jobs.erase(jobs.begin() + jobs.size());
 				waitpid(jobs.back()._pid, NULL, WUNTRACED);
 				return 0;
 			}
 			else{
 				for (unsigned int i = 0; i < jobs.size(); i++) {
         				if (jobs[i]._id == atoi(args[1])){
-					curr_fg_pid = jobs[i]._pid;
-					cout << jobs[i]._name << " : " << jobs[i]._pid << endl;
-            				kill(jobs[i]._pid, SIGCONT);
-					waitpid(jobs[i]._pid, NULL, WUNTRACED);
-					return 0;
+						curr_fg_pid = jobs[i]._pid;
+						cout << jobs[i]._name << " : " << jobs[i]._pid << endl;
+            					kill(jobs[i]._pid, SIGCONT);
+						fg_name = jobs[i]._name;
+						jobs.erase(jobs.begin() + i);
+						waitpid(jobs[i]._pid, NULL, WUNTRACED);
+						return 0;
 					}
        				}
 				cout << "smash error: "<< cmd << ": job-id " << args[1] <<" does not exist" << endl;

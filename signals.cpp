@@ -82,16 +82,10 @@ void sigstopHandler(int sig_num)
 			{
 				id = jobs.back()._id + 1;
 			}
-			char cmd[MAX_LINE_SIZE];
-			strcpy(cmd, fg_name.c_str());
-			bool is_fg_cmd = (('f' == cmd[0]) && ('g' == cmd[1]));
-			if(!is_fg_cmd){
-				Job new_job(fg_name, id, curr_fg_pid, time(NULL));
-				new_job._stopped = true;
-				jobs.push_back(new_job);
-		 		//jobs[jobs.size()-1]._stopped = true;				
+			Job new_job(fg_name, id, curr_fg_pid, time(NULL));
+			new_job._stopped = true;
+			jobs.push_back(new_job);			
 			return;
-			}
 		}
 		else
 		{
