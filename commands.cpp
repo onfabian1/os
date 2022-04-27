@@ -201,10 +201,13 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 			if(num_arg == 0){
 				curr_fg_pid = jobs.back()._pid;
 				cout << jobs.back()._name << " : " << jobs.back()._pid << endl;
-				kill(jobs.back()._pid, SIGCONT);
+				if (!!kill(curr_fg_pid, SIGCONT)) {
+					perror("smash error: kill failed");
+					exit(1);
+				}
 				fg_name = jobs.back()._name;
 				jobs.erase(jobs.begin() + jobs.size());
-				waitpid(jobs.back()._pid, NULL, WUNTRACED);
+				waitpid(curr_fg_pid, NULL, WUNTRACED);
 				return 0;
 			}
 			else{
@@ -212,7 +215,10 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
         				if (jobs[i]._id == atoi(args[1])){
 						curr_fg_pid = jobs[i]._pid;
 						cout << jobs[i]._name << " : " << jobs[i]._pid << endl;
-            					kill(jobs[i]._pid, SIGCONT);
+            					if (!!kill(jobs[i]._pid, SIGCONT)) {
+							perror("smash error: kill failed");
+							exit(1);
+						}
 						fg_name = jobs[i]._name;
 						jobs.erase(jobs.begin() + i);
 						waitpid(jobs[i]._pid, NULL, WUNTRACED);
@@ -250,12 +256,15 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 				}
 				if(max_id != 0){
 					jobs[job_to_resume]._stopped = false;
-					cout << "[" << jobs[job_to_resume]._id << "] " << jobs[job_to_resume]._name << " : " << jobs[job_to_resume]._pid << " " << difftime(time(NULL), jobs[job_to_resume]._time) <<" secs " << endl;
-					kill(jobs.back()._pid, SIGCONT);
+					cout << jobs[job_to_resume]._name << " : " << jobs[job_to_resume]._pid << endl;
+					if (!!kill(jobs.back()._pid, SIGCONT)) {
+						perror("smash error: kill failed");
+						exit(1);
+					}
 					return 0;
 				}
 				else{
-					cout << "smash error: " << cmd << ": there are no stopped jobs to resum" << endl;
+					cout << "smash error: " << cmd << ": there are no stopped jobs to resume" << endl;
 					return 1;
 				}
 			}
@@ -265,11 +274,14 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 						if(jobs[i]._stopped){	
 							jobs[i]._stopped = false;
 							cout << "[" << jobs[i]._id << "] " << jobs[i]._name << " : " << jobs[i]._pid << " " << difftime(time(NULL), jobs[i]._time) <<" secs " << endl;
-			    				kill(jobs[i]._pid, SIGCONT);
+			    				if (!!kill(jobs[i]._pid, SIGCONT)) {
+								perror("smash error: kill failed");
+								exit(1);
+							}
 							return 0;
 						}
 						else{
-							cout << "smash error: " << cmd << ": job-id " << args[1] << "is already running in the background" << endl;
+							cout << "smash error: " << cmd << ": job-id " << args[1] << " is already running in the background" << endl;
 					return 1;
 						}
 					}
