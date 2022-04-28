@@ -83,10 +83,17 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 	if (!strcmp(cmd, "cd")) 
 	{
 		char tmp[MAX_LINE_SIZE];
-		if (num_arg != 1) {
+		if (num_arg > 1) {
 			cout << "smash error: " << cmd << ": too many arguments" << endl;
 			return 1;
 		}
+		else if (!num_arg) {
+			cout << "smash error: " << cmd << endl;
+			return 1;
+		}	
+		if (args[1][strlen(args[1])-1] == '&'){
+			args[1][strlen(args[1])-1] = '\0';
+		}		
 		if (!strcmp(args[1],"-")) {
 			if (!is_prev) {
 				cout << "smash error: " << cmd << ": OLDPWD not set" << endl;
@@ -193,11 +200,11 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 	/*************************************************/
 	else if (!strcmp(cmd, "fg")) 
 	{
-		if (!jobs.empty()){
-			if (num_arg > 1){
+		if (num_arg > 1){
 			cout << "smash error: "<< cmd <<": invalid arguments" << endl;
 			return 1;
-			}
+		}
+		if (!jobs.empty()){
 			if(num_arg == 0){
 				curr_fg_pid = jobs.back()._pid;
 				cout << jobs.back()._name << " : " << jobs.back()._pid << endl;
@@ -211,6 +218,10 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 				return 0;
 			}
 			else{
+				int id = atoi(args[1]);
+				if (!id) {
+					cout << "smash error: " << cmd << ": invalid arguments" << endl;
+				}
 				for (unsigned int i = 0; i < jobs.size(); i++) {
         				if (jobs[i]._id == atoi(args[1])){
 						curr_fg_pid = jobs[i]._pid;
@@ -234,7 +245,16 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 			if(num_arg == 0){
 				cout << "smash error: "<< cmd <<": jobs list is empty" << endl;
 				return 1;
-			}		
+			}
+			else if (!atoi(args[1])) {
+				cout << "smash error: " << cmd << ": invalid arguments" << endl;
+				return 1;
+			}
+			else {
+				cout << "smash error: "<< cmd << ": job-id " << args[1] <<" does not exist" << endl;
+				return 1;
+			}
+			
 		}
 	} 
 	/*************************************************/
@@ -242,12 +262,12 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 	{
 		int max_id = 0;
 		int job_to_resume = 0;
-  		if (!jobs.empty()){
-			if (num_arg > 1){
+		if (num_arg > 1){
 			cout << "smash error: "<< cmd <<": invalid arguments" << endl;
 			return 1;
-			}
-			else if(num_arg == 0){
+		}
+  		if (!jobs.empty()){
+			if(num_arg == 0){
 				for (unsigned int i = 0; i < jobs.size(); i++) {
         				if (jobs[i]._id > max_id && jobs[i]._stopped){
 						max_id = jobs[i]._id;
@@ -269,6 +289,11 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 				}
 			}
 			else{
+				int id = atoi(args[1]);
+				if (!id) {
+					cout << "smash error: " << cmd << ": invalid arguments" << endl;
+					return 1;
+				}
 				for (unsigned int i = 0; i < jobs.size(); i++) {
         				if (jobs[i]._id == atoi(args[1])){
 						if(jobs[i]._stopped){	
@@ -282,7 +307,7 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 						}
 						else{
 							cout << "smash error: " << cmd << ": job-id " << args[1] << " is already running in the background" << endl;
-					return 1;
+							return 1;
 						}
 					}
        				}
@@ -293,9 +318,17 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 		}
 		else{
 			if(num_arg == 0){
-				cout << "smash error: "<< cmd <<": jobs list is empty" << endl;
+				cout << "smash error: " << cmd << ": there are no stopped jobs to resume" << endl;
 				return 1;
-			}		
+			}
+			else if (!atoi(args[1])) {
+				cout << "smash error: " << cmd << ": invalid arguments" << endl;
+				return 1;
+			}	
+			else {
+				cout << "smash error: "<< cmd << ": job-id " << args[1] <<" does not exist" << endl;
+				return 1;
+			}	
 		}
 	}
 	/*************************************************/
