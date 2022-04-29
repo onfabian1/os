@@ -102,11 +102,11 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 			else {
 				if (getcwd(tmp, MAX_LINE_SIZE) == NULL) {
 					perror("smash error: getcwd failed");
-					exit(1);
+					return 1;
 				}
 				if (chdir(prevDir)) {
 					perror("smash error: chdir failed)");
-					exit(1);
+					return 1;
 				}
 				else {
 					strcpy(prevDir,tmp);
@@ -116,14 +116,14 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 		}
 		if (getcwd(prevDir, MAX_LINE_SIZE) == NULL) {
 			perror("smash error: getcwd failed");
-			exit(1);
+			return 1;
 		}
 		else {
 		strcpy(tmp, prevDir);
 		}
 		if (chdir(args[1])) {
 			perror("smash error: chdir failed");
-			exit(1);
+			return 1;
 		}
 		else {
 			is_prev = true;
@@ -136,7 +136,7 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 	{
 		if (getcwd(pwd, MAX_LINE_SIZE) == NULL) {
 			perror("smash error: getcwd failed");
-			exit(1);
+			return 1;
 		}
 		cout << pwd << endl;
 	}
@@ -172,11 +172,15 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 		}	
 		if(!!kill(pid, signum)) {
 			perror("smash error: kill failed");
-			exit(1);
+			return 1;
 		}
-		if (signum == 19) { //SIGSTOP
+		if (signum == 19 || signum == 20) { //SIGSTOP or SIGTSTP
 			it->_stopped = true;
-		}	
+		}
+		else if ((signum == 18) && (it->_stopped == true)) {
+			cout << pid << "   " << it->_stopped << endl;
+			it->_stopped = false;
+		}
 		return 0;
 	}
 	
@@ -210,7 +214,7 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 				cout << jobs.back()._name << " : " << jobs.back()._pid << endl;
 				if (!!kill(curr_fg_pid, SIGCONT)) {
 					perror("smash error: kill failed");
-					exit(1);
+					return 1;
 				}
 				fg_name = jobs.back()._name;
 				jobs.erase(jobs.begin() + jobs.size());
@@ -228,7 +232,7 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 						cout << jobs[i]._name << " : " << jobs[i]._pid << endl;
             					if (!!kill(jobs[i]._pid, SIGCONT)) {
 							perror("smash error: kill failed");
-							exit(1);
+							return 1;
 						}
 						fg_name = jobs[i]._name;
 						jobs.erase(jobs.begin() + i);
@@ -279,7 +283,7 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 					cout << jobs[job_to_resume]._name << " : " << jobs[job_to_resume]._pid << endl;
 					if (!!kill(jobs.back()._pid, SIGCONT)) {
 						perror("smash error: kill failed");
-						exit(1);
+						return 1;
 					}
 					return 0;
 				}
@@ -298,10 +302,10 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
         				if (jobs[i]._id == atoi(args[1])){
 						if(jobs[i]._stopped){	
 							jobs[i]._stopped = false;
-							cout << "[" << jobs[i]._id << "] " << jobs[i]._name << " : " << jobs[i]._pid << " " << difftime(time(NULL), jobs[i]._time) <<" secs " << endl;
+							cout << jobs[i]._name << " : " << jobs[i]._pid << endl;
 			    				if (!!kill(jobs[i]._pid, SIGCONT)) {
 								perror("smash error: kill failed");
-								exit(1);
+								return 1;
 							}
 							return 0;
 						}
@@ -350,14 +354,14 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 					cout << "[" << it->_id << "] " << it->_name << " - " << "Sending SIGTERM...";
 					if(!!kill(it->_pid, SIGTERM)) {
 						perror("smash error: kill failed");
-						exit(1);
+						return 1;
 					}
 					while(1) {
 						time_tot = difftime(stop_time, start_time);
 						if (time_tot >= 5) {
 							if (!!kill(it->_pid, SIGKILL)) {
 								perror("smash error: kill failed");
-								exit(1);
+								return 1;
 							}
 							cout << " (5 sec passed) Sending SIGKILL... Done" << endl;
 							break;
@@ -365,7 +369,7 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 						pid = waitpid(it->_pid, NULL, WNOHANG);
 						if (pid == -1) {
 							perror("smash error: waitpid failed");
-							exit(1);
+							return 1;
 						}
 						else if (pid == 0) {
 							stop_time = time(NULL);
