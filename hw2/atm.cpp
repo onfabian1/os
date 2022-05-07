@@ -1,49 +1,38 @@
-//		commands.cpp
+//		atms.cpp
 //********************************************
-#include "commands.h"
+#include "atm.h"
 #include <vector>
 #include <ctime>
 #include <iostream>
 #include <cstring>
 #include <string>
 #include <fstream>
-//********************************************
-// function name: ExeCmd
-// Description: interperts and executes built-in commands
-// Parameters: pointer to jobs, command string
-// Returns: 0 - success,1 - failure
-//**************************************************************************************
+#include <pthread.h>
 
 using namespace std;
 
-extern pid_t curr_fg_pid;
-extern string fg_name;
-bool is_prev = false;
-char prevDir[MAX_LINE_SIZE];
 
-
-Job::Job(string job_name, int job_id, pid_t job_pid, time_t job_time): _name(job_name), _id(job_id), _pid(job_pid), _time(job_time)
+ATM::ATM(int atm_id, pid_t atm_pid): _id(atm_id), _pid(atm_pid)
 	{
-		// _name += '\0';
-		_stopped = false;
+		_finish = false;
 	}
 			
-void DelFinJobs(vector<Job> &jobs){
-	for (unsigned int i = 0; i < jobs.size(); i++) {
-        	if (waitpid(jobs[i]._pid, NULL, WNOHANG) != 0) {
-            	jobs.erase(jobs.begin() + i);
+void DelFinAtms(vector<ATM> &atms){
+	for (unsigned int i = 0; i < atms.size(); i++) {
+        	if (waitpid(atms[i]._pid, NULL, WNOHANG) != 0) {
+            	atms.erase(atms.begin() + i);
        		}
 	}
    
 }
 
-void Job::stop_job()
+void ATM::finish_atm()
 	{
-		_stopped = true;
+		_finish = true;
 	}
 
 
-void Job::print_job(time_t time)
+/*void Job::print_job(time_t time)
 	{
 		double time_tot = difftime(time, _time);
 		if (_stopped)
@@ -53,9 +42,8 @@ void Job::print_job(time_t time)
 		else
 			cout << "[" << _id << "] " << _name << " : " << _pid << " " << time_tot <<" secs " << endl;
 	}
-
-int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
-{
+*/
+int ExeAtm(pthread thread, int id, char** path) {
 	curr_fg_pid = getpid();
 	char* cmd; 
 	char* args[MAX_ARG];
@@ -74,7 +62,7 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 			num_arg++; 
  
 	}
-	DelFinJobs(jobs);
+	DelFinAtms(jobs);k
 /*************************************************/
 // Built in Commands PLEASE NOTE NOT ALL REQUIRED
 // ARE IN THIS CHAIN OF IF COMMANDS. PLEASE ADD
