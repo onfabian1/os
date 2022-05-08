@@ -11,425 +11,84 @@
 
 using namespace std;
 
+extern int counter;
 
-ATM::ATM(int atm_id, pid_t atm_pid): _id(atm_id), _pid(atm_pid)
-	{
-		_finish = false;
-	}
-			
-void DelFinAtms(vector<ATM> &atms){
-	for (unsigned int i = 0; i < atms.size(); i++) {
-        	if (waitpid(atms[i]._pid, NULL, WNOHANG) != 0) {
-            	atms.erase(atms.begin() + i);
-       		}
-	}
-   
-}
-
-void ATM::finish_atm()
-	{
-		_finish = true;
-	}
-
-
-/*void Job::print_job(time_t time)
-	{
-		double time_tot = difftime(time, _time);
-		if (_stopped)
-		{
-			cout << "[" << _id << "] " << _name << " : " << _pid << " " << time_tot << " secs " << "(stopped)" << endl;
-		}
-		else
-			cout << "[" << _id << "] " << _name << " : " << _pid << " " << time_tot <<" secs " << endl;
-	}
-*/
-int ExeAtm(pthread thread, int id, char** path) {
-	curr_fg_pid = getpid();
-	char* cmd; 
-	char* args[MAX_ARG];
-	char pwd[MAX_LINE_SIZE];
-	char const* delimiters = " \t\n";  
-	int i = 0, num_arg = 0;
-	bool illegal_cmd = FALSE; // illegal command
-    	cmd = strtok(lineSize, delimiters);
-	if (cmd == NULL)
-		return 0; 
-   	args[0] = cmd;
-	for (i=1; i<MAX_ARG; i++)
-	{
-		args[i] = strtok(NULL, delimiters); 
-		if (args[i] != NULL) 
-			num_arg++; 
- 
-	}
-	DelFinAtms(jobs);k
 /*************************************************/
-// Built in Commands PLEASE NOTE NOT ALL REQUIRED
-// ARE IN THIS CHAIN OF IF COMMANDS. PLEASE ADD
-// MORE IF STATEMENTS AS REQUIRED
+// Parse of txt -> line by line
+// Parse of line -> word by word
+// handle line command 
+// Sync R/W for Accounts
+// returns counter-- when EOF
 /*************************************************/
-	if (!strcmp(cmd, "cd")) 
-	{
-		char tmp[MAX_LINE_SIZE];
-		if (num_arg > 1) {
-			cout << "smash error: " << cmd << ": too many arguments" << endl;
-			return 1;
-		}
-		else if (!num_arg) {
-			cout << "smash error: " << cmd << endl;
-			return 1;
-		}	
-		if (args[1][strlen(args[1])-1] == '&'){
-			args[1][strlen(args[1])-1] = '\0';
-		}		
-		if (!strcmp(args[1],"-")) {
-			if (!is_prev) {
-				cout << "smash error: " << cmd << ": OLDPWD not set" << endl;
-				return 1;
-			}
-			else {
-				if (getcwd(tmp, MAX_LINE_SIZE) == NULL) {
-					perror("smash error: getcwd failed");
-					return 1;
-				}
-				if (chdir(prevDir)) {
-					perror("smash error: chdir failed)");
-					return 1;
-				}
-				else {
-					strcpy(prevDir,tmp);
-					return 0;
-				}
-			}
-		}
-		if (getcwd(prevDir, MAX_LINE_SIZE) == NULL) {
-			perror("smash error: getcwd failed");
-			return 1;
-		}
-		else {
-		strcpy(tmp, prevDir);
-		}
-		if (chdir(args[1])) {
-			perror("smash error: chdir failed");
-			return 1;
-		}
-		else {
-			is_prev = true;
-			return 0;
-		}
-	} 
-	
-	/*************************************************/
-	else if (!strcmp(cmd, "pwd")) 
-	{
-		if (getcwd(pwd, MAX_LINE_SIZE) == NULL) {
-			perror("smash error: getcwd failed");
-			return 1;
-		}
-		cout << pwd << endl;
-	}
+void ExeAtm(pthread thread, int atm_id, char* path) { //Parse the txt file in PATH and moving to func
 
-	/*************************************************/
-	else if (!strcmp(cmd, "kill")) 
-	{ 
-		if (num_arg != 2) {
-			cout << "smash error: kill: invalid arguments" << endl;
-			return 1;
-		}
-		pid_t pid;
-		vector<Job>::iterator it;
-		int signum = atoi(args[1] + 1);
-		int id = atoi(args[2]);
-		bool job_exist = false;
-		if ((args[1][0] != '-') || (signum > 31) || !id || id < 0 || !signum) {
-			cout << "smash error: kill: invalid arguments" << endl;
-			return 1;
-		}
-		if (!jobs.empty()) {
-			for(it = jobs.begin(); it!=jobs.end(); ++it) {
-				if (it->_id == id) { 
-					job_exist = true;
-					pid = it->_pid;
-					break;
-				}
-			}
-		}
-		if (!job_exist) {
-			cout << "smash error: kill: job-id " << id << " does not exist" << endl;
-			return 1;
-		}	
-		if(!!kill(pid, signum)) {
-			perror("smash error: kill failed");
-			return 1;
-		}
-		if (signum == 19 || signum == 20) { //SIGSTOP or SIGTSTP
-			it->_stopped = true;
-		}
-		else if ((signum == 18) && (it->_stopped == true)) {
-			it->_stopped = false;
-		}
-		return 0;
-	}
-	
-	/*************************************************/
-	else if (!strcmp(cmd, "jobs")) 
-	{
-		if (!jobs.empty())
-		{
-			vector<Job>::iterator it;
-			for(it = jobs.begin(); it!=jobs.end(); ++it){
-				time_t curr_time = time(NULL);
-				it->print_job(curr_time);
-			}
-		}
-	}
-	/*************************************************/
-	else if (!strcmp(cmd, "showpid")) 
-	{
-			cout << "smash pid is " << getpid() << endl;
-	}
-	/*************************************************/
-	else if (!strcmp(cmd, "fg")) 
-	{
-		if (num_arg > 1){
-			cout << "smash error: "<< cmd <<": invalid arguments" << endl;
-			return 1;
-		}
-		if (!jobs.empty()){
-			if(num_arg == 0){
-				curr_fg_pid = jobs.back()._pid;
-				cout << jobs.back()._name << " : " << jobs.back()._pid << endl;
-				if (!!kill(curr_fg_pid, SIGCONT)) {
-					perror("smash error: kill failed");
-					return 1;
-				}
-				fg_name = jobs.back()._name;
-				jobs.erase(jobs.begin() + jobs.size());
-				waitpid(curr_fg_pid, NULL, WUNTRACED);
-				return 0;
-			}
-			else{
-				int id = atoi(args[1]);
-				if (!id) {
-					cout << "smash error: " << cmd << ": invalid arguments" << endl;
-				}
-				for (unsigned int i = 0; i < jobs.size(); i++) {
-        				if (jobs[i]._id == atoi(args[1])){
-						curr_fg_pid = jobs[i]._pid;
-						cout << jobs[i]._name << " : " << jobs[i]._pid << endl;
-            					if (!!kill(jobs[i]._pid, SIGCONT)) {
-							perror("smash error: kill failed");
-							return 1;
-						}
-						fg_name = jobs[i]._name;
-						jobs.erase(jobs.begin() + i);
-						waitpid(jobs[i]._pid, NULL, WUNTRACED);
-						return 0;
-					}
-       				}
-				cout << "smash error: "<< cmd << ": job-id " << args[1] <<" does not exist" << endl;
-				return 1;
-			}
-				
-		}
-		else{
-			if(num_arg == 0){
-				cout << "smash error: "<< cmd <<": jobs list is empty" << endl;
-				return 1;
-			}
-			else if (!atoi(args[1])) {
-				cout << "smash error: " << cmd << ": invalid arguments" << endl;
-				return 1;
-			}
-			else {
-				cout << "smash error: "<< cmd << ": job-id " << args[1] <<" does not exist" << endl;
-				return 1;
-			}
-			
-		}
-	} 
-	/*************************************************/
-	else if (!strcmp(cmd, "bg")) 
-	{
-		int max_id = 0;
-		int job_to_resume = 0;
-		if (num_arg > 1){
-			cout << "smash error: "<< cmd <<": invalid arguments" << endl;
-			return 1;
-		}
-  		if (!jobs.empty()){
-			if(num_arg == 0){
-				for (unsigned int i = 0; i < jobs.size(); i++) {
-        				if (jobs[i]._id > max_id && jobs[i]._stopped){
-						max_id = jobs[i]._id;
-						job_to_resume = i;
-					}
-				}
-				if(max_id != 0){
-					jobs[job_to_resume]._stopped = false;
-					cout << jobs[job_to_resume]._name << " : " << jobs[job_to_resume]._pid << endl;
-					if (!!kill(jobs.back()._pid, SIGCONT)) {
-						perror("smash error: kill failed");
-						return 1;
-					}
-					return 0;
-				}
-				else{
-					cout << "smash error: " << cmd << ": there are no stopped jobs to resume" << endl;
-					return 1;
-				}
-			}
-			else{
-				int id = atoi(args[1]);
-				if (!id) {
-					cout << "smash error: " << cmd << ": invalid arguments" << endl;
-					return 1;
-				}
-				for (unsigned int i = 0; i < jobs.size(); i++) {
-        				if (jobs[i]._id == atoi(args[1])){
-						if(jobs[i]._stopped){	
-							jobs[i]._stopped = false;
-							cout << jobs[i]._name << " : " << jobs[i]._pid << endl;
-			    				if (!!kill(jobs[i]._pid, SIGCONT)) {
-								perror("smash error: kill failed");
-								return 1;
-							}
-							return 0;
-						}
-						else{
-							cout << "smash error: " << cmd << ": job-id " << args[1] << " is already running in the background" << endl;
-							return 1;
-						}
-					}
-       				}
-				cout << "smash error: "<< cmd << ": job-id " << args[1] <<" does not exist" << endl;
-				return 1;
-			}
-				
-		}
-		else{
-			if(num_arg == 0){
-				cout << "smash error: " << cmd << ": there are no stopped jobs to resume" << endl;
-				return 1;
-			}
-			else if (!atoi(args[1])) {
-				cout << "smash error: " << cmd << ": invalid arguments" << endl;
-				return 1;
-			}	
-			else {
-				cout << "smash error: "<< cmd << ": job-id " << args[1] <<" does not exist" << endl;
-				return 1;
-			}	
-		}
-	}
-	/*************************************************/
-	else if (!strcmp(cmd, "quit"))
-	{
-		if (num_arg == 0)
-		{
-			exit(0);
-		}
-		 else if(!strcmp(args[1], "kill"))
-		{
-			if (!jobs.empty()) {
-				pid_t pid;
-				double time_tot;
-				vector<Job>::iterator it;
-				for(it = jobs.begin(); it!=jobs.end(); ++it) {
-					time_t stop_time = time(NULL);
-					time_t start_time = time(NULL);
-					cout << "[" << it->_id << "] " << it->_name << " - " << "Sending SIGTERM...";
-					if(!!kill(it->_pid, SIGTERM)) {
-						perror("smash error: kill failed");
-						return 1;
-					}
-					while(1) {
-						time_tot = difftime(stop_time, start_time);
-						if (time_tot >= 5) {
-							if (!!kill(it->_pid, SIGKILL)) {
-								perror("smash error: kill failed");
-								return 1;
-							}
-							cout << " (5 sec passed) Sending SIGKILL... Done" << endl;
-							break;
-						}
-						pid = waitpid(it->_pid, NULL, WNOHANG);
-						if (pid == -1) {
-							perror("smash error: waitpid failed");
-							return 1;
-						}
-						else if (pid == 0) {
-							stop_time = time(NULL);
-						}
-						else {
-							cout << " Done" << endl;
-							break;
-						}
-					}
-				}
-			}
-			exit(0);
-		}
-		else 
-		{
-			cout << "smash error: " << cmd << ": too many arguments" << endl;
-			return 1;
-		}
-		
-			
-	} 
-
-	/*************************************************/
-	else if (!strcmp(cmd, "diff"))
-	{
-		if (num_arg != 2)
-		{
-			cout << "smash error: " << cmd << ": invalid arguments" << endl;
-			return 1;	
-		}
-		char c1, c2;
-		ifstream fd1, fd2;
-		fd1.open(args[1]);
-		fd2.open(args[2]);
-		while(!fd1.eof() && !fd2.eof())
-		{
-			if (fd1.eof() || fd2.eof())
-			{ // files are not the same size
-				cout << "1" << endl;
-				fd1.close();
-				fd2.close();
-				return 1;
-			}
-			fd1.get(c1);
-			fd2.get(c2);
-			if (c1 != c2)
-			{ // files are not equal
-				cout << "1" << endl;
-				fd1.close();
-				fd2.close();
-				return 1;
-			}
-		} // files are identical
-		fd1.close();
-		fd2.close();
-		cout << "0" << endl;
-		return 0;
-
-	}
-	/*************************************************/
-	else // external command
-	{
- 		ExeExternal(args, cmdString, num_arg, jobs);
-	 	return 0;
-	}
-	if (illegal_cmd == TRUE)
-	{
-		printf("smash error: > \"%s\"\n", cmdString);
+	ifstream fd;
+	fd.open(path);
+	if (fd.fail()) {
+		perror("");
 		return 1;
 	}
-    return 0;
-}
+	char* cmd;
+	string line;
+	getline(fd,line);
+	char const* delimiters = " \t\n";
+	char* args[MAX_ARG];  
+	int i = 0, num_arg = 0;
 
+	while(!fd.eof()) {
+		cmd = strtok(&line[0], delimiters);
+		if (args[0] == NULL)
+			return 0; 
+		args[0] = cmd;
+		for (i=1; i<MAX_ARG; i++)
+		{
+			args[i] = strtok(NULL, delimiters); 
+			if (args[i] != NULL) 
+				num_arg++; 
+ 
+		}
+		/*************************************************/
+		if (!strcmp(args[0], 'O') {
+			//calls func opening account
+			continue; //need to delete "continue" after writing the func
+		}
+		/*************************************************/
+		else if (!strcmp(args[0], 'D')) {
+			//calls func Deposite
+			continue;
+		}
+		/*************************************************/
+		else if (!strcmp(args[0], 'W')) {
+			//calls func Withdraw
+			continue;
+		}
+		/*************************************************/
+		else if (!strcmp(args[0], 'B')) {
+			//calls func Ballance
+			continue;
+		}
+		/*************************************************/
+		else if (!strcmp(args[0], 'Q')) {
+			//calls func Quit account
+			continue;
+		}
+		/*************************************************/
+		else if (!strcmp(args[0], 'T')) {
+			//calls func Transaction
+			continue;
+		}
+		/*************************************************/
+		else {
+			log.txt << "Illegal action" << endl;
+			continue;
+		}
+		/*************************************************/
+		getline(fd,line);
+	}
+	fd1.close();	
+	counter--;
+	return;
+/*
 //**************************************************************************************
 // function name: ExeExternal
 // Description: executes external command
@@ -438,75 +97,6 @@ int ExeAtm(pthread thread, int id, char** path) {
 //**************************************************************************************
 
 void ExeExternal(char* args[MAX_ARG], char* cmdString, int num_arg, vector<Job> &jobs) {
-
-	int pID;
-	//bool flag = true;
-	//int status;
-	char *lineSize = args[num_arg];
-    	switch(pID = fork()) 
-	{
-    		case -1 : 
-			// Error 
-			perror("smash error: fork failed");
-			exit(1);
-
-        	case 0 :// Child Process
-               		setpgrp();
-			if (lineSize[strlen(lineSize)-1] == '&'){
-				lineSize[strlen(lineSize)-1] = '\0';
-				if (!strlen(args[num_arg])) {
-					args[num_arg]=NULL;
-				}
-			}
-			execvp(args[0], args);
-			perror("smash error: execv failed");
-			if(!!kill(getpid(), SIGKILL))
-			{
-				perror("smash error: kill failed");
-				exit(1);
-			}
-
-		default:
-			if (lineSize[strlen(lineSize)-1] == '&'){
-				BgCmd(args, jobs, pID, num_arg);
-			}
-			else{
-			//flag = false;
-			curr_fg_pid = pID;
-			waitpid(pID, NULL, WUNTRACED);
-			}
-                	// Parent process
-
-			
-	}
+return -1;
 }
-//**************************************************************************************
-// function name: BgCmd
-// Description: if command is in background, insert the command to jobs
-// Parameters: command string, pointer to jobs
-// Returns: 0- BG command -1- if not
-//**************************************************************************************
-int BgCmd(char* args[MAX_ARG], vector<Job> &jobs, int pID, int num_arg)
-{
-
-	//char* Command;
-	//char const* delimiters = " \t\n";
-	//char *args[MAX_ARG];
-	char *lineSize = args[num_arg];
-	if (lineSize[strlen(lineSize)-1] == '&')
-	{
-		int id;
-		if(jobs.empty()){ 
-			id = 1;
-		}
-		else{
-			id=jobs.back()._id+1;
-		} 
-		lineSize[strlen(lineSize)-1] = '\0';
-		Job new_job(fg_name, id, pID, time(NULL));
-		jobs.push_back(new_job);
-		return 0;
-		
-	}
-	return -1;
-}
+/*

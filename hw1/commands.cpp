@@ -178,7 +178,6 @@ int ExeCmd(vector<Job> &jobs, char* lineSize, char* cmdString)
 			it->_stopped = true;
 		}
 		else if ((signum == 18) && (it->_stopped == true)) {
-			cout << pid << "   " << it->_stopped << endl;
 			it->_stopped = false;
 		}
 		return 0;
