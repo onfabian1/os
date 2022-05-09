@@ -1,4 +1,4 @@
-//		atms.cpp
+//		atm.cpp
 //********************************************
 #include "atm.h"
 #include <vector>
@@ -20,7 +20,7 @@ extern int counter;
 // Sync R/W for Accounts
 // returns counter-- when EOF
 /*************************************************/
-void ExeAtm(pthread thread, int atm_id, char* path) { //Parse the txt file in PATH and moving to func
+void ATM::run(pthread thread, int atm_id, char* path) { //Parse the txt file in PATH and moving to func
 
 	ifstream fd;
 	fd.open(path);
@@ -30,7 +30,7 @@ void ExeAtm(pthread thread, int atm_id, char* path) { //Parse the txt file in PA
 	}
 	char* cmd;
 	string line;
-	getline(fd,line);
+	getline(fd, line);
 	char const* delimiters = " \t\n";
 	char* args[MAX_ARG];  
 	int i = 0, num_arg = 0;

@@ -1,33 +1,29 @@
-#ifndef _COMMANDS_H
-#define _COMMANDS_H
+#ifndef _ATM_H
+#define _ATM_H
 #include <unistd.h> 
 #include <stdio.h>
 #include <ctime>
 #include <stdlib.h>
-#include <signal.h>
 #include <string>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <list>
 #include <vector>
-#define MAX_LINE_SIZE 80
 #define MAX_ARG 20
+
 using namespace std;
 typedef enum { FALSE , TRUE } boolean;
 
-class Job {
-	public:	
+class ATM {
+	private:
 
-		string _name;
-		int _id;
-		pid_t _pid;
-		time_t _time;
-		bool _stopped;
+	int id;
+	char* input_path;
 
-		Job(string _name, int _id, pid_t _pid, time_t _time);
-		void stop_job();
-		void print_job(time_t _time);
-		~Job(){};
+	public:
+
+	ATM(long id, char* input_path);
+	void run();
+	~ATM(){};
 };
 
 void DelFinJobs(vector<Job> &jobs);

@@ -1,4 +1,4 @@
-/*	smash.c
+/*	bank.cpp
 main file. This file contains the main function of smash
 *******************************************************************/
 #include <sys/types.h>
@@ -11,12 +11,11 @@ main file. This file contains the main function of smash
 #include <string.h>
 #include <pthread.h>
 #include <iostream>
-#define MAX_LINE_SIZE 80
 
 using namespace std;
 
 vector<Account> accounts; //This represents the list of accounts.
-int counter =0;
+int counter = 0;
 //**************************************************************************************
 // function name: main
 // Description: main function of bank. get argumants from user and calls atms
@@ -30,13 +29,14 @@ void *Init(void *threadid) {
 
 int main(int argc, char *argv[])
 {
-	time_t start_time = time(NULL);	   
+	time_t start_time_commision = time(NULL);
+	time_t start_time_print = time(NULL);	   
     	pthread_t atm[argc-1];
 	int rc;
 	int i;
 	for (i=0; i<argc; i++) {
 		// build ATM thread and send to ATM handler
-		rc = pthread_create(&(atm[i]),NULL, Init, (void*)&i);  //create ATM
+		rc = pthread_create(&(atm[i]),NULL, ExeAtm, (void*)&i);  //create ATM
 		if (rc) {
 			log.txt << "Error: unable to create thread, " << rc << endl;
 			exit(-1);
