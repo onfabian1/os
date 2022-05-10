@@ -10,21 +10,20 @@
 #include <pthread.h>
 #include <vector>
 
-class account{
+class account {
 	private:
-	int accountId
-	double balance
-	int password
-	
-	pthread_mutex_t balanceLock
+	int accountId;
+	double balance;
+	int password;
+	pthread_mutex_t balanceLock;
+
 	public:
-	void openAccount
-	void withdraw
-	void deposit
-	double balance
-	void closeAccount
-	void transfer
+	void openAccount;
+	void withdraw;
+	void deposit;
+	double balance;
+	void closeAccount;
+	void transfer;
+};
 
-
-}
-
+#endif
