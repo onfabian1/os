@@ -9,21 +9,26 @@
 #include <sys/wait.h>
 #include <pthread.h>
 #include <vector>
+using namespace std
 
 class account {
 	private:
 	int accountId;
-	double balance;
 	int password;
+	double balance;
 	pthread_mutex_t balanceLock;
+	pthread_cond_t writePhase;
+	pthread_cond_t readPhase;
 
 	public:
-	void openAccount;
-	void withdraw;
-	void deposit;
-	double balance;
-	void closeAccount;
-	void transfer;
+	account(int _accountId, int _password, int _balance);
+	int openAccount(int accountId, int password, int balance);
+	int deposit();	
+	int withdraw();
+	double balance();
+	int closeAccount();
+	int transfer();
+	int balance_read_counter;
 };
 
 #endif
