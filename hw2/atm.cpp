@@ -9,6 +9,8 @@
 #include <fstream>
 #include <pthread.h>
 
+const unsigned int ATM_USLEEP = 100000;
+
 using namespace std;
 
 extern int counter;
@@ -20,10 +22,16 @@ extern int counter;
 // Sync R/W for Accounts
 // returns counter-- when EOF
 /*************************************************/
-void ATM::run(pthread thread, int atm_id, char* path) { //Parse the txt file in PATH and moving to func
+
+ATM::ATM(int atm_id, char* input_path) :
+	m_atm_id(atm_id), m_input_path(input_path) {}
+
+ATM::~ATM() {}
+
+void ATM::run() { //Parse the txt file in PATH and moving to func
 
 	ifstream fd;
-	fd.open(path);
+	fd.open(ATM.m_input_path);
 	if (fd.fail()) {
 		perror("");
 		return 1;
@@ -49,32 +57,32 @@ void ATM::run(pthread thread, int atm_id, char* path) { //Parse the txt file in 
 		}
 		/*************************************************/
 		if (!strcmp(args[0], 'O') {
-			//calls func opening account
+			account.openAccount(args[1], args[2], args[3]);
 			continue; //need to delete "continue" after writing the func
 		}
 		/*************************************************/
 		else if (!strcmp(args[0], 'D')) {
-			//calls func Deposite
+			account.deposit(args[1], args[2], args[3]);
 			continue;
 		}
 		/*************************************************/
 		else if (!strcmp(args[0], 'W')) {
-			//calls func Withdraw
+			account.withdraw(args[1], args[2], args[3]);
 			continue;
 		}
 		/*************************************************/
 		else if (!strcmp(args[0], 'B')) {
-			//calls func Ballance
+			account.balance(args[1], args[2]);
 			continue;
 		}
 		/*************************************************/
 		else if (!strcmp(args[0], 'Q')) {
-			//calls func Quit account
+			account.closeAccount(args[1], args[2]);
 			continue;
 		}
 		/*************************************************/
 		else if (!strcmp(args[0], 'T')) {
-			//calls func Transaction
+			account.transfer(args[1], args[2], args[3], args[4]);
 			continue;
 		}
 		/*************************************************/

@@ -21,14 +21,15 @@ class account {
 	pthread_cond_t readPhase;
 
 	public:
-	account(int _accountId, int _password, int _balance);
-	int openAccount(int accountId, int password, int balance);
-	int deposit();	
-	int withdraw();
-	double balance();
-	int closeAccount();
+	account(int _accountId, int _password, double _balance);
+	int openAccount(int _accountId, int _password, double _balance);
+	int deposit(int _accountId, int _password, double _balance);	
+	int withdraw(int _accountId, int _password, double _balance);
+	double balance(int _accountId, int _password);
+	int closeAccount(int _accountId, int _password);
 	int transfer();
 	int balance_read_counter;
+	bool CeckAccExist(int _accountId);
 };
 
 #endif

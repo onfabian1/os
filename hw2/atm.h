@@ -15,11 +15,11 @@ typedef enum { FALSE , TRUE } boolean;
 
 class ATM {
 	private:
-	int id;
-	char* input_path;
+	int m_atm_id;
+	char* m_input_path;
 
 	public:
-	ATM(long id, char* input_path);
+	ATM(int atm_id, char* input_path);
 	void run();
 	~ATM(){};
 };

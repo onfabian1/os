@@ -14,7 +14,7 @@ main file.
 
 using namespace std;
 
-//vector<Account> accounts; //This represents the list of accounts.
+vector<account> accounts; //This represents the list of accounts.
 vector<ATM> atms;//This represents the list of accounts.
 int counter = 0;
 //**************************************************************************************
