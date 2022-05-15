@@ -96,15 +96,3 @@ void ATM::run() { //Parse the txt file in PATH and moving to func
 	fd1.close();	
 	counter--;
 	return;
-/*
-//**************************************************************************************
-// function name: ExeExternal
-// Description: executes external command
-// Parameters: external command arguments, external command string
-// Returns: void
-//**************************************************************************************
-
-void ExeExternal(char* args[MAX_ARG], char* cmdString, int num_arg, vector<Job> &jobs) {
-return -1;
-}
-/*

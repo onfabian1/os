@@ -2,7 +2,6 @@
 using namespace std
 extern vector<accounts> accounts
 bool exist = false
-bool NegativeAmount = false;
 
 account::CheckAccExist(int accountNum) {
 	exist = false;
@@ -72,26 +71,6 @@ account::withdraw(int accountNum, int pass, int amount){
 	if(pass != password) 
 		return -1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
 
-	pthread_mutex_lock(balanceLock); //Read Phase
-	while (balance_read_counter == -1)
-		pthread_cond_wait(balanceLock, readPhase);
-	balance_read_counter++;
-	if (!account.CheckAccExist(accountNum)) { //checks account exist after waiting
-		if(!balance_read_counter)
-			pthread_cond_signal(writePhase);
-		pthread_mutex_unlock(balanceLock);
-		return -1; //print "Error <ATM ID>: Your transaction failed – account id <id> does not exist" to log
-	}
-
-	if ((balance - amount) < 0)
-		NegativeAmount = true;
-	sleep(1);
-	balance_read_counter--;
-	if(!balance_read_counter)
-		pthread_cond_signal(writePhase);
-	pthread_mutex_unlock(balanceLock);
-	if (NegativeAmount)
-		return -1; //print "Error <ATM ID>: Your transaction failed – account id <id> balance is lower than <amount>" to log
 	pthread_mutex_lock(balanceLock); //Write Phase
 	while(balance_read_counter != 0) 
 		pthread_cond_wait(balanceLock, writePhase);
@@ -103,8 +82,18 @@ account::withdraw(int accountNum, int pass, int amount){
 		pthread_cond_signal(writePhase);
 		pthread_mutex_unlock(balanceLock);
 		return -1; //print "Error <ATM ID>: Your transaction failed – account id <id> does not exist" to log
-	}	
+	}
+	if ((balance - amount) < 0) {
+		balance_read_counter = 0;
+		sleep(1);	
+		pthread_cond_broadcast(readPhase);
+		pthread_cond_signal(writePhase);
+		pthread_mutex_unlock(balanceLock);
+		return -1; //print "Error <ATM ID>: Your transaction failed – account id <id> balance is lower than <amount>" to log
+	}
+	
 	balance = balance - amount;
+	balance_read_counter = 0;
 	sleep(1);	
 	balance_read_counter = 0;
 	pthread_cond_broadcast(readPhase);
