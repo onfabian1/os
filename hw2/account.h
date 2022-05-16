@@ -22,14 +22,19 @@ class account {
 
 	public:
 	account(int _accountId, int _password, double _balance);
+	bool WriteLock();
+	void WriteUnlock();
+	bool ReadLock();
+	void ReadUnlock();
 	int openAccount(int _accountId, int _password, double _balance);
 	int deposit(int _accountId, int _password, double _balance);	
 	int withdraw(int _accountId, int _password, double _balance);
 	double balance(int _accountId, int _password);
 	int closeAccount(int _accountId, int _password);
-	int transfer();
-	int balance_read_counter;
+	int transfer(int _accountId, int _password, int _targetAccountId, double _balance);
 	bool CeckAccExist(int _accountId);
+	int balance_read_counter;
+	double commisionToBank(int _accountId);
 };
 
 #endif
