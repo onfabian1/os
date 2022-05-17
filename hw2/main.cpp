@@ -40,7 +40,7 @@ void* BankCommision(void* threadid) {
 
 int main(int argc, char *argv[]) {   
     	pthread_t atm[argc-1], bank_print, bank_commisiom;
-	int rc;
+	int rc1, rc2, rc3;
 	int i, j;
 	for (j=1; j<=argc; j++) {
 		ATM new_atm(j, argv[j]);
@@ -48,14 +48,22 @@ int main(int argc, char *argv[]) {
 	}
 	for (i=0; i<argc; i++) {
 		// build ATM thread and send to ATM handler
-		rc = pthread_create(&(atm[i]),NULL, AtmExe, (void*)&atms[i]);  //create ATM
-		if (rc) {
+		rc1 = pthread_create(&(atm[i]),NULL, AtmExe, (void*)&atms[i]);  //create ATM
+		if (rc1) {
 			log.txt << "Error: unable to create thread, " << rc << endl;
 			exit(-1);
 		}
 	}
-	rc = pthread_create(&(bank_print), NULL, BankPrint, (void*)&i);
-	rc = pthread_create(&(bank_commision), NULL, BankCommision, (void*)&i);
+	rc2 = pthread_create(&(bank_print), NULL, BankPrint, (void*)&i);
+	if (rc2) {
+			log.txt << "Error: unable to create thread, " << rc << endl;
+			exit(-1);
+		}
+	rc3 = pthread_create(&(bank_commision), NULL, BankCommision, (void*)&i);
+	if (rc3) {
+			log.txt << "Error: unable to create thread, " << rc << endl;
+			exit(-1);
+		}
 	for (i=0; i<argc; i++) {
 		pthread_join(atm[i]);
 	}

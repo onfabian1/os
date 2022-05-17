@@ -56,10 +56,10 @@ account::ReadUnlock() {
 	return; 
 }
 
-account::CheckAccExist(int accountNum) {
+bool CheckAccExist(int accountNum) {
 	exist = false;
 	for(i=0; i<accounts.size(); i++){ //Check if account exist 
-		if(accountNum == accountId) {
+		if(accountNum == accounts[i].accountId) {
 			exist = true;
 			break;
 		}
@@ -69,10 +69,10 @@ account::CheckAccExist(int accountNum) {
 	return true;
 }
 
-account::CheckTargetAccExist(int accountNum) {
+bool CheckTargetAccExist(int accountNum) {
 	exist = false;
 	for(j=0; j<accounts.size(); j++){ //Check if account exist 
-		if(accountNum == accountId) {
+		if(accountNum == accounts[j].accountId) {
 			exist = true;
 			break;
 		}
@@ -89,7 +89,7 @@ account::account(int _accountId, int _password, double _balance): accountId(_acc
 }
 
 account::openAccount(int accountNum, int pass, double balan){
-	if(account.CheckAccExist(accountNum)){ //checks account exist
+	if(!CheckAccExist(accountNum)){ //checks account exist
 		sleep(1);
 		return -1; //print "Error <ATM ID>: Your transaction failed – account with the same id exists" to log
 	}
@@ -101,101 +101,103 @@ account::openAccount(int accountNum, int pass, double balan){
 
 account::deposit(int accountNum, int pass, double amount){
 	i = 0;
-	if (!account.CheckAccExist(accountNum)) { //checks account exist
+	if (!CheckAccExist(accountNum)) { //checks account exist
 		sleep(1);
 		return -1; //print "Error <ATM ID>: Your transaction failed – account id <id> does not exist" to log
 	}
-	if(pass != accounts[i].password) {
-		sleep(1);
-		return -1; //print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
-	}
 	if (!accounts[i].WriteLock())
 		return -1;
-	balance = balance + amount;
+	if(pass != accounts[i].password) {
+		accounts[i].WriteUnlock();
+		return -1; //print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
+	}
+	accounts[i].balance += amount;
 	accounts[i].WriteUnlock()
 	return 0; //print "<ATM ID>: Account <id> new balance is <bal> after <amount> $ was deposited" to log
 }
 
 account::withdraw(int accountNum, int pass, double amount){
-	if (!account.CheckAccExist(accountNum)) { //checks account exist
+	if (!CheckAccExist(accountNum)) { //checks account exist
 		sleep(1);
 		return -1; //print "Error <ATM ID>: Your transaction failed – account id <id> does not exist" to log
 	}
 	if (!accounts[i].WriteLock())
 		return -1;
 	if(pass != accounts[i].password) {
-		sleep(1);
+		accounts[i].WriteUnlock();
 		return -1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
 	}
-	if ((balance - amount) < 0) {
-	accounts[i].WriteUnlock()
-	return 0; //print "Error <ATM ID>: Your transaction failed – account id <id> balance is lower than <amount>" to log
+	if ((accounts[i].balance - amount) < 0) {
+		accounts[i].WriteUnlock()
+		return 0; //print "Error <ATM ID>: Your transaction failed – account id <id> balance is lower than <amount>" to log
 	}
 	
-	balance = balance - amount;
-	account.WriteUnlock();
+	accounts[i].balance -= amount;
+	accounts[i].WriteUnlock();
 	return 0; //print "<ATM ID>: Account <id> new balance is <bal> after <amount> $ was withdrew" to log
 }
 
 account::balance(int accountNum, int pass){
-	if (!account.CheckAccExist(accountNum)) { //checks account exist
+	if (!CheckAccExist(accountNum)) { //checks account exist
 		sleep(1);
 		return -1; //print "Error <ATM ID>: Your transaction failed – account id <id> does not exist" to log
 	}
-	if(pass != accounts[i].password) {
-		sleep(1);
-		return -1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
-	}
 	if (!accounts[i].ReadLock())
 		return -1;
-	double bal = balance;
+	if(pass != accounts[i].password) {
+		accounts[i].ReadUnlock();
+		return -1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
+	}
+	double bal = accounts[i].balance;
 	accounts[i].ReadUnlock();
 	return 0; //print "<ATM ID>: Account <id> balance is <bal>" to log
 }
 
 account::closeAccount(int accountNum, int pass){
-	if (!account.CheckAccExist(accountNum)) { //checks account exist
+	if (!CheckAccExist(accountNum)) { //checks account exist
 		sleep(1);
 		return -1; //print "Error <ATM ID>: Your transaction failed – account id <id> does not exist" to log
 	}
-	if(pass != accounts[i].password) {
-		sleep(1);
-		return -1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
-	}
 	if(!accounts[i].WriteLock())
 		return -1;
+	if(pass != accounts[i].password) {
+		accounts[i].WriteUnlock();
+		return -1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
+	}
 	accounts[i].WriteUnlock(); //could be a problem but for now I dont see another solution	
 	accounts.erase(accounts.begin()+i); //remove from list accounts
 	return 0; //print "<ATM ID>: Account <id> is now closed. Balance was <bal>" to log
 }
 
 account::transfer(int accountNum, int pass, int targetAccountNum, double amount){
-	if (!(account.CheckAccExist(accountNum)) { //checks account exist
+	if (!CheckAccExist(accountNum)) { //checks account exist
 		sleep(1);
 		return -1; 
-	}
-	if (!(account.CheckAccExist(targetAccountNum)) { //checks target account exist
-		sleep(1);
-		return -1; 
-	}
-	if(pass != accounts[i].password) { //check src pass
-		sleep(1);
-		return -1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
-	}
-	if(pass != accounts[j].password) { //check dest pass
-		sleep(1);
-		return -1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
 	}
 	if(!accounts[i].WriteLock()) //catch source write lock
 		return -1; 
-
+	if (!CheckAccExist(targetAccountNum)) { //checks target account exist
+		sleep(1);
+		return -1; 
+	}
 	if(!accounts[j].WriteLock()) //catch destination write lock (potential DEADLOCK w/BANK)
 		return -1; 
+
+	if(pass != accounts[i].password) { //check src pass
+		accounts[i].WriteUnlock();
+		accounts[j].WriteUnlock();
+		return -1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
+	}
+	if(pass != accounts[j].password) { //check dest pass
+		accounts[i].WriteUnlock();
+		accounts[j].WriteUnlock();
+		return -1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
+	}
 	
 	if ((accounts[i].balance - amount) < 0) { //src balance
 		accounts[i].WriteUnlock();
 		accounts[j].WriteUnlock();
-		return 0; //print "Error <ATM ID>: Your transaction failed – account id <id> balance is lower than <amount>" to log
+		return -1; //print "Error <ATM ID>: Your transaction failed – account id <id> balance is lower than <amount>" to log
 	}
 	
 	accounts[i].balance -= amount; //src balance

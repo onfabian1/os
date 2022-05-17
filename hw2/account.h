@@ -32,10 +32,11 @@ class account {
 	double balance(int _accountId, int _password);
 	int closeAccount(int _accountId, int _password);
 	int transfer(int _accountId, int _password, int _targetAccountId, double _balance);
-	bool CeckAccExist(int _accountId);
-	bool CheckTargetAccExist(int _accountId)
 	int balance_read_counter;
 	double commisionToBank(int _accountId);
 };
+
+	bool CeckAccExist(int _accountId);
+	bool CheckTargetAccExist(int _accountId);
 
 #endif
