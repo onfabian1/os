@@ -19,8 +19,8 @@ class ATM {
 	char* m_input_path;
 
 	public:
-	ATM(int atm_id, char* input_path);
-	void run();
+	ATM(int atm_id, char* input_path, Bank* bank);
+	void run(int atm_num);
 	~ATM(){};
 };
 

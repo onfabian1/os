@@ -11,6 +11,7 @@ main file.
 #include <string.h>
 #include <pthread.h>
 #include <iostream>
+#include "log.h"
 
 using namespace std;
 
@@ -24,7 +25,7 @@ int counter = 0;
 
 void *AtmExe(void* m_atm) {
 	ATM atm = *(ATM*)m_atm; 
-	atm.run();
+	atm.run(atm_num);
 	pthread_exit(NULL);
 }
 
@@ -38,17 +39,22 @@ void* BankCommision(void* bank_comm) {
 	pthread_exit(NULL)
 }
 
+int atm_num = 0;
+
 int main(int argc, char *argv[]) {   
     	pthread_t atm[argc-1], bank_print, bank_commisiom;
+	Bank bank;
 	int rc1, rc2, rc3;
-	int i, j;
+	int j=0;
+	Log log_file("log.txt");
+	bank.bank_log = &log_file;
 	for (j=1; j<=argc; j++) {
-		ATM new_atm(j, argv[j]);
+		ATM new_atm(j, argv[j], &bank);
 		atms.push_back(new_atm);
 	}
-	for (i=0; i<argc; i++) {
+	for (atm_num=0; i<argc; i++) {
 		// build ATM thread and send to ATM handler
-		rc1 = pthread_create(&(atm[i]),NULL, AtmExe, (void*)&atms[i]);  //create ATM
+		rc1 = pthread_create(&(atm[atm_num]),NULL, AtmExe, (void*)&atms[atm_num]);  //create ATM
 		if (rc1) {
 			log.txt << "Error: unable to create thread, " << rc << endl;
 			exit(-1);
