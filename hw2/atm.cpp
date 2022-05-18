@@ -27,10 +27,10 @@ extern vector<account> accounts;
 // returns counter-- when EOF
 /*************************************************/
 
-ATM::ATM(int atm_id, char* input_path, Bank *bank) {
+ATM::ATM(int atm_id, char* input_path, Log *log_file) {
 	this->m_atm_id = atm_id;
 	this->m_input_path = input_path;
-	this->bank = bank;
+	this->log_file = log_file;
 }
 
 void ATM::run(int atm_num) { //Parse the txt file in PATH and moving to func
@@ -65,11 +65,11 @@ void ATM::run(int atm_num) { //Parse the txt file in PATH and moving to func
 		if (!strcmp(args[0], "O")) {
 			if(!CheckAccExist(atoi(args[1]))){
 				atms[atm_num].openAccount(atoi(args[1]), atoi(args[2]), atoi(args[3]));
-				bank->print_new_account(atms[atm_num].m_atm_id, atoi(args[1]), atoi(args[2]), atoi(args[3]));
+				log_file->print_new_account(atms[atm_num].m_atm_id, atoi(args[1]), atoi(args[2]), atoi(args[3]));
 				sleep(1);
 				continue; //write success to log
 			}
-			bank->print_account_exist_error(atms[atm_num].m_atm_id, atoi(args[1]));
+			log_file->print_account_exist_error(atms[atm_num].m_atm_id);
 			sleep(1);
 			continue; //write false to log
 		}
@@ -77,11 +77,11 @@ void ATM::run(int atm_num) { //Parse the txt file in PATH and moving to func
 		else if (!strcmp(args[0], "D")) {
 			if(!CheckAccExist(atoi(args[1]))) {
 				accounts[i].deposit(atoi(args[1]), atoi(args[2]), atoi(args[3]));
-				bank->print_deposit(atms[atm_num].m_atm_id, atoi(args[1]),atoi(args[2]), atoi(args[3]));
+				log_file->print_deposit(atms[atm_num].m_atm_id, atoi(args[1]),atoi(args[2]), atoi(args[3]));
 				sleep(1);
 				return; //write success to log
 			}
-			bank->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[1])); 
+			log_file->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[1])); 
 			sleep(1);
 			continue; //false
 		}
@@ -89,11 +89,11 @@ void ATM::run(int atm_num) { //Parse the txt file in PATH and moving to func
 		else if (!strcmp(args[0], "W")) {
 			if(!CheckAccExist(atoi(args[1]))){
 				accounts[i].withdraw(atoi(args[1]), atoi(args[2]), atoi(args[3]));
-				bank->print_withdrew(atms[atm_num].m_atm_id, atoi(args[1]),atoi(args[2]), atoi(args[3]));
+				log_file->print_withdrew(atms[atm_num].m_atm_id, atoi(args[1]),atoi(args[2]), atoi(args[3]));
 				sleep(1);
 				return; //Success
 			}
-			bank->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[1])); 
+			log_file->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[1])); 
 			sleep(1);
 			continue; //FALSE
 		}
@@ -101,11 +101,11 @@ void ATM::run(int atm_num) { //Parse the txt file in PATH and moving to func
 		else if (!strcmp(args[0], "B")) {
 			if(!CheckAccExist(atoi(args[1]))) {
 				accounts[i].Balance(atoi(args[1]), atoi(args[2]));
-				bank->print_curr_balance(atms[atm_num].m_atm_id, atoi(args[1]),atoi(args[2]));
+				log_file->print_curr_balance(atms[atm_num].m_atm_id, atoi(args[1]),atoi(args[2]));
 				sleep(1);
 				return; //SUCCESS
 			}
-			bank->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[1])); 
+			log_file->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[1])); 
 			sleep(1);
 			continue; //FALSE
 		}
@@ -113,11 +113,11 @@ void ATM::run(int atm_num) { //Parse the txt file in PATH and moving to func
 		else if (!strcmp(args[0], "Q")) {
 			if(!CheckAccExist(atoi(args[1]))) {
 				accounts[i].closeAccount(atoi(args[1]), atoi(args[2]));
-				bank->print_delete_account(atms[atm_num].m_atm_id, atoi(args[1]),atoi(args[2]));
+				log_file->print_delete_account(atms[atm_num].m_atm_id, atoi(args[1]),atoi(args[2]));
 				sleep(1);
 				continue; //SUCCESS
 			}
-			print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[1])); 
+			log_file->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[1])); 
 			sleep(1);
 			continue; //FALSE
 		}
@@ -129,9 +129,9 @@ void ATM::run(int atm_num) { //Parse the txt file in PATH and moving to func
 				continue; //SUCESS
 			}
 			else if(!CheckAccExist(atoi(args[1])))
-				print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[1]));
+				log_file->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[1]));
 			else  
-				print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[3]));
+				log_file->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[3]));
 			sleep(1);
 			continue; //FALSE
 		}

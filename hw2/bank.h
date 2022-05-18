@@ -9,9 +9,9 @@
 #include <sys/wait.h>
 #include <pthread.h>
 #include <vector>
-using namespace std
+using namespace std;
 
-class bank {
+class Bank {
 	private:
 	//pthread_mutex_t globalBankLock;
 	int bankReaders;

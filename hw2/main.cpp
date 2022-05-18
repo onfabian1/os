@@ -43,13 +43,11 @@ int atm_num = 0;
 
 int main(int argc, char *argv[]) {   
     	pthread_t atm[argc-1], bank_print, bank_commisiom;
-	Bank bank;
 	int rc1, rc2, rc3;
 	int j=0;
 	Log log_file("log.txt");
-	bank.bank_log = &log_file;
 	for (j=1; j<=argc; j++) {
-		ATM new_atm(j, argv[j], &bank);
+		ATM new_atm(j, argv[j], &log_file);
 		atms.push_back(new_atm);
 	}
 	for (atm_num=0; i<argc; i++) {
