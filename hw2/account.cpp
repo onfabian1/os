@@ -1,60 +1,11 @@
 #include "account.h"
 
-using namespace std
+using namespace std;
 
 extern vector<account> accounts;
 bool exist = false;
 unsigned int i=0;
 unsigned int j=0;
-
-account::WriteLock() {
-	pthread_mutex_lock(balanceLock); //Write Phase
-	while(balance_read_counter != 0)
-		pthread_cond_wait(balanceLock, writePhase);
-	balance_read_counter = -1;
-	if (!account.CheckAccExist(accountNum)) { //checks account exist after waiting
-		sleep(1);	
-		balance_read_counter = 0;
-		pthread_cond_broadcast(readPhase);
-		pthread_cond_signal(writePhase);
-		pthread_mutex_unlock(balanceLock);
-		return false; //print "Error <ATM ID>: Your transaction failed – account id <id> does not exist" to log
-	}
-	return true;
-}
-
-account::WriteUnlock() {
-	sleep(1);	
-	balance_read_counter = 0;
-	pthread_cond_broadcast(readPhase);
-	pthread_cond_signal(writePhase);
-	pthread_mutex_unlock(balanceLock);
-	return;
-}
-
-account::ReadLock() {
-	pthread_mutex_lock(balanceLock); //Read Phase
-	while (balance_read_counter == -1)
-		pthread_cond_wait(balanceLock, readPhase);
-	balance_read_counter++;
-	if (!account.CheckAccExist(accountNum)) { //checks account exist after waiting
-		sleep(1);
-		balance_read_counter--;
-		if(!balance_read_counter)
-			pthread_cond_signal(writePhase);
-		pthread_mutex_unlock(balanceLock);
-		return false; //print "Error <ATM ID>: Your transaction failed – account id <id> does not exist" to log
-	return true;
-}
-
-account::ReadUnlock() {
-	sleep(1);
-	balance_read_counter--;
-	if(!balance_read_counter)
-		pthread_cond_signal(writePhase);
-	pthread_mutex_unlock(balanceLock);
-	return; 
-}
 
 bool CheckAccExist(int accountNum) {
 	exist = false;
@@ -67,6 +18,56 @@ bool CheckAccExist(int accountNum) {
 	if (!exist) 
 		return false;
 	return true;
+}
+
+bool account::WriteLock(int accountNum) {
+	pthread_mutex_lock(&balanceLock); //Write Phase
+	while(balance_read_counter != 0)
+		pthread_cond_wait(&writePhase, &balanceLock);
+	balance_read_counter = -1;
+	if (!CheckAccExist(accountNum)) { //checks account exist after waiting
+		sleep(1);	
+		balance_read_counter = 0;
+		pthread_cond_broadcast(&readPhase);
+		pthread_cond_signal(&writePhase);
+		pthread_mutex_unlock(&balanceLock);
+		return false; //print "Error <ATM ID>: Your transaction failed – account id <id> does not exist" to log
+	}
+	return true;
+}
+
+void account::WriteUnlock() {
+	sleep(1);	
+	balance_read_counter = 0;
+	pthread_cond_broadcast(&readPhase);
+	pthread_cond_signal(&writePhase);
+	pthread_mutex_unlock(&balanceLock);
+	return;
+}
+
+bool account::ReadLock(int accountNum) {
+	pthread_mutex_lock(&balanceLock); //Read Phase
+	while (balance_read_counter == -1)
+		pthread_cond_wait(&readPhase, &balanceLock);
+	balance_read_counter++;
+	if (!CheckAccExist(accountNum)) { //checks account exist after waiting
+		sleep(1);
+		balance_read_counter--;
+		if(!balance_read_counter)
+			pthread_cond_signal(&writePhase);
+		pthread_mutex_unlock(&balanceLock);
+		return false; //print "Error <ATM ID>: Your transaction failed – account id <id> does not exist" to log
+	}
+	return true;
+}
+
+void account::ReadUnlock() {
+	sleep(1);
+	balance_read_counter--;
+	if(!balance_read_counter)
+		pthread_cond_signal(&writePhase);
+	pthread_mutex_unlock(&balanceLock);
+	return; 
 }
 
 bool CheckTargetAccExist(int accountNum) {
@@ -82,53 +83,38 @@ bool CheckTargetAccExist(int accountNum) {
 	return true;
 }
 
-account::account(int _accountId, int _password, double _balance): accountId(_accountId), password(_password), balance(_balance){
-		pthread_mutex balanceLock;
-		pthread_mutex_init(&balanceLock, NULL);
-		int balance_read_counter = 0;
+account::account(int _password, double _balance ,int _accountId): password(_password), balance(_balance), accountId(_accountId) {
+		pthread_mutex_init(&balanceLock, nullptr);
+		balance_read_counter = 0;
 }
 
-account::openAccount(int accountNum, int pass, double balan){
-	if(!CheckAccExist(accountNum)){ //checks account exist
-		sleep(1);
-		return -1; //print "Error <ATM ID>: Your transaction failed – account with the same id exists" to log
-	}
+int openAccount(int accountNum, int pass, double balan){
 	account newacc(accountNum, pass, balan);
 	accounts.push_back(newacc);
-	sleep(1);
 	return 0; //print "<ATM ID>: New account id is <id> with password <pass> and initial balance <bal>" to log
 }
 
-account::deposit(int accountNum, int pass, double amount){
-	i = 0;
-	if (!CheckAccExist(accountNum)) { //checks account exist
-		sleep(1);
-		return -1; //print "Error <ATM ID>: Your transaction failed – account id <id> does not exist" to log
-	}
-	if (!accounts[i].WriteLock())
+int account::deposit(int accountNum, int pass, double amount){
+	if (!accounts[i].WriteLock(accountNum))
 		return -1;
 	if(pass != accounts[i].password) {
 		accounts[i].WriteUnlock();
 		return -1; //print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
 	}
 	accounts[i].balance += amount;
-	accounts[i].WriteUnlock()
+	accounts[i].WriteUnlock();
 	return 0; //print "<ATM ID>: Account <id> new balance is <bal> after <amount> $ was deposited" to log
 }
 
-account::withdraw(int accountNum, int pass, double amount){
-	if (!CheckAccExist(accountNum)) { //checks account exist
-		sleep(1);
-		return -1; //print "Error <ATM ID>: Your transaction failed – account id <id> does not exist" to log
-	}
-	if (!accounts[i].WriteLock())
+int account::withdraw(int accountNum, int pass, double amount){
+	if (!accounts[i].WriteLock(accountNum))
 		return -1;
 	if(pass != accounts[i].password) {
 		accounts[i].WriteUnlock();
 		return -1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
 	}
 	if ((accounts[i].balance - amount) < 0) {
-		accounts[i].WriteUnlock()
+		accounts[i].WriteUnlock();
 		return 0; //print "Error <ATM ID>: Your transaction failed – account id <id> balance is lower than <amount>" to log
 	}
 	
@@ -137,28 +123,20 @@ account::withdraw(int accountNum, int pass, double amount){
 	return 0; //print "<ATM ID>: Account <id> new balance is <bal> after <amount> $ was withdrew" to log
 }
 
-account::balance(int accountNum, int pass){
-	if (!CheckAccExist(accountNum)) { //checks account exist
-		sleep(1);
-		return -1; //print "Error <ATM ID>: Your transaction failed – account id <id> does not exist" to log
-	}
-	if (!accounts[i].ReadLock())
+int account::Balance(int accountNum, int pass){
+	if (!accounts[i].ReadLock(accountNum))
 		return -1;
 	if(pass != accounts[i].password) {
 		accounts[i].ReadUnlock();
 		return -1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
 	}
-	double bal = accounts[i].balance;
+	//double bal = accounts[i].balance;
 	accounts[i].ReadUnlock();
 	return 0; //print "<ATM ID>: Account <id> balance is <bal>" to log
 }
 
-account::closeAccount(int accountNum, int pass){
-	if (!CheckAccExist(accountNum)) { //checks account exist
-		sleep(1);
-		return -1; //print "Error <ATM ID>: Your transaction failed – account id <id> does not exist" to log
-	}
-	if(!accounts[i].WriteLock())
+int account::closeAccount(int accountNum, int pass){
+	if(!accounts[i].WriteLock(accountNum))
 		return -1;
 	if(pass != accounts[i].password) {
 		accounts[i].WriteUnlock();
@@ -169,18 +147,10 @@ account::closeAccount(int accountNum, int pass){
 	return 0; //print "<ATM ID>: Account <id> is now closed. Balance was <bal>" to log
 }
 
-account::transfer(int accountNum, int pass, int targetAccountNum, double amount){
-	if (!CheckAccExist(accountNum)) { //checks account exist
-		sleep(1);
+int account::transfer(int accountNum, int pass, int targetAccountNum, double amount){
+	if(!accounts[i].WriteLock(accountNum)) //catch source write lock
 		return -1; 
-	}
-	if(!accounts[i].WriteLock()) //catch source write lock
-		return -1; 
-	if (!CheckAccExist(targetAccountNum)) { //checks target account exist
-		sleep(1);
-		return -1; 
-	}
-	if(!accounts[j].WriteLock()) //catch destination write lock (potential DEADLOCK w/BANK)
+	if(!accounts[j].WriteLock(accountNum)) //catch destination write lock (potential DEADLOCK w/BANK)
 		return -1; 
 
 	if(pass != accounts[i].password) { //check src pass

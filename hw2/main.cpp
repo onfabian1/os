@@ -28,12 +28,12 @@ void *AtmExe(void* m_atm) {
 	pthread_exit(NULL);
 }
 
-void* BankPrint(void* threadid) {
-	// send to proper function
+void* BankPrint(void* bank_print) {
+	bank 
 	pthread_exit(NULL)
 }
 
-void* BankCommision(void* threadid) {
+void* BankCommision(void* bank_comm) {
 	// send to proper function
 	pthread_exit(NULL)
 }

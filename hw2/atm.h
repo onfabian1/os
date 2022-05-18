@@ -24,5 +24,9 @@ class ATM {
 	~ATM(){};
 };
 
+int openAccount(int _accountId, int _password, double _balance);
+bool CheckAccExist(int _accountId);
+bool CheckTargetAccExist(int _accountId);
+
 #endif
 
