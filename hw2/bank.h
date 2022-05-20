@@ -22,17 +22,20 @@ class Bank {
     	pthread_mutex_t listWriteLock;
 
 	public:
-	void getCommissions(int _accountId, int _password, double _balance);
-	void statusPrint(int _accountId, int _password, double _balance);
+	Bank(double bankMoney, int bankReaders, int listReaders);
+	~Bank();	
+	void getCommisions();
+	void StatusPrint();
 	void LockListRead();
-	void UnockListRead();
-	void LockListwrite();
-	void UnockListwrite();
+	void UnlockListRead();
+	void LockListWrite();
+	void UnlockListWrite();
 	void LockBankRead();
 	void UnlockBankRead();
 	void LockBankWrite();	
 	void UnlockBankWrite();
-	double BankMoney;
+	double bankMoney;
+	Log bankLog
 };
 
 #endif

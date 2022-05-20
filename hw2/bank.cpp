@@ -11,26 +11,27 @@ main file. This file contains the main function of smash
 #include <string.h>
 #include <pthread.h>
 #include <iostream>
+#include "bank.h"
+#include "account.h"
 
 using namespace std;
+extern vector<account> accounts;
 
-bank::bank(int bankMoney): bankMoney(0), bandReaders(0), listReaders(0){
-	 pthread_mutex_init(&globalBankLock ,nullptr);
+Bank::Bank(double bankMoney, int bankReaders, int listReaders): bankReaders(0), listReaders(0), bankMoney(0){
 	 pthread_mutex_init(&bankReadLock ,nullptr);
 	 pthread_mutex_init(&bankWriteLock ,nullptr);
 	 pthread_mutex_init(&listReadLock ,nullptr);
 	 pthread_mutex_init(&listWriteLock ,nullptr);
 }
 
-bank::~bank(){
-	 pthread_mutex_destreoy(&globalBankLock);
-	 pthread_mutex_destreoy(&bankReadLock);
-	 pthread_mutex_destreoy(&bankWriteLock);
-	 pthread_mutex_destreoy(&listReadLock);
-	 pthread_mutex_destreoy(&listWriteLock);
+Bank::~Bank(){
+	 pthread_mutex_destroy(&bankReadLock);
+	 pthread_mutex_destroy(&bankWriteLock);
+	 pthread_mutex_destroy(&listReadLock);
+	 pthread_mutex_destroy(&listWriteLock);
 }
 
-void bank::LockListRead() {
+void Bank::LockListRead() {
     pthread_mutex_lock(&listReadLock);
     listReaders++;
     if(listReaders == 1){
@@ -39,7 +40,7 @@ void bank::LockListRead() {
     pthread_mutex_unlock(&listReadLock);
 }
 
-void bank::UnlockListRead() {
+void Bank::UnlockListRead() {
     pthread_mutex_lock(&listReadLock);
     listReaders--;
     if(!listReaders){
@@ -49,15 +50,15 @@ void bank::UnlockListRead() {
 }
 
 
-void bank::LockListWrite() {
+void Bank::LockListWrite() {
     pthread_mutex_lock(&listWriteLock);
 }
 
-void bank::UnlockListWrite() {
+void Bank::UnlockListWrite() {
     pthread_mutex_unlock(&listWriteLock);
 }
 
-void bank::LockBankRead() {
+void Bank::LockBankRead() {
     pthread_mutex_lock(&bankReadLock);
     bankReaders++;
     if(bankReaders == 1){
@@ -66,7 +67,7 @@ void bank::LockBankRead() {
     pthread_mutex_unlock(&bankReadLock);
 }
 
-void bank::UnlockListRead() {
+void Bank::UnlockBankRead() {
     pthread_mutex_lock(&bankReadLock);
     bankReaders++;
     if(!bankReaders){
@@ -75,26 +76,34 @@ void bank::UnlockListRead() {
     pthread_mutex_unlock(&bankReadLock);
 }
 
-void bank::LockBankWrite(){
+void Bank::LockBankWrite(){
 	pthread_mutex_lock(&bankWriteLock);
 }
 
-void bank::UnlockBankWrite(){
+void Bank::UnlockBankWrite(){
 	pthread_mutex_unlock(&bankWriteLock);
 }
 
-bank::getCommision(){
+void Bank::getCommisions(){
 	double commisionPrecent = 3/100;
 	LockListRead();
 	for(unsigned int i=0; i<accounts.size(); i++){
-		accounts[i].ReadLock.(accounts[i].accountId);
-		bankMoney += CommisionAmmount;
-		}
+		accounts[i].ReadLock(accounts[i].accountId);
+		double accBalan = accounts[i].Balance(accounts[i].accountId, accounts[i].password);		
+		double chargeRate =  accBalan*commisionPrecent;
+		accounts[i].WriteLock();
+		accounts[i].withdraw(accounts[i].accountId, accounts[i].password,chargeRate);
+		accounts[i].WriteUnlock();
+		accounts[i].ReadUnlock();
+		LockBankWrite();
+		bankMoney+=chargeRate;
+		UnlockBankWrite();
 	}
-
+	LockListRead();
+		// NEED TO IMPLEMENT HERE BANK LOG PRINTS
 }
 
-bank::statusPrint(){
+void Bank::StatusPrint(){
 	
 
 
