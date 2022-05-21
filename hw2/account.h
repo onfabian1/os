@@ -14,25 +14,24 @@ using namespace std;
 
 class account {
 
-	private:
+	public:
+	int accountId;
 	int password;
 	double balance;
 	pthread_mutex_t balanceLock;
 	pthread_cond_t writePhase;
 	pthread_cond_t readPhase;
+	~account();
 
-	public:
-	int accountId;
-	account(int _password, double _balance,int _accountId);
-	bool WriteLock(int _accountId);
+	account(int _accountId, int _password,double _balance);
+	void WriteLock();
 	void WriteUnlock();
-	bool ReadLock(int _accountId);
+	void ReadLock();
 	void ReadUnlock();
-	int deposit(int _accountId, int _password, double _balance);	
-	int withdraw(int _accountId, int _password, double _balance);
-	int Balance(int _accountId, int _password);
-	int closeAccount(int _accountId, int _password);
-	int transfer(int _accountId, int _password, int _targetAccountId, double _balance);
+	int deposit(int _accountId, int _password, double _balance, int acc_num);	
+	int withdraw(int _accountId, int _password, double _balance, int acc_num);
+	int Balance(int _accountId, int _password, int acc_num);
+	int transfer(int _accountId, int _password, int _targetAccountId, double _balance, int acc_num, int acc_tar_num);
 	int balance_read_counter;
 	double commisionToBank(int _accountId);
 };

@@ -11,13 +11,14 @@ main file.
 #include <string.h>
 #include <pthread.h>
 #include <iostream>
-#include "log.h"
+#include "atm.h"
+#include "bank.h"
 
 using namespace std;
 
-vector<account> accounts; //This represents the list of accounts.
 vector<ATM> atms;//This represents the list of accounts.
 int counter = 0;
+
 //**************************************************************************************
 // function name: main
 // Description: main function. get argumants from user and calls atms, bank_print and bank_commision
@@ -25,24 +26,25 @@ int counter = 0;
 
 void *AtmExe(void* m_atm) {
 	ATM atm = *(ATM*)m_atm; 
-	atm.run(atm_num);
+	atm.run();
 	pthread_exit(NULL);
 }
 
-void* BankPrint(void* bank_print) {
-	bank 
-	pthread_exit(NULL)
+void* BankPrint(void* bank) {
+	Bank bank_pri = *(Bank*)bank;
+	bank_pri.StatusPrint();
+	pthread_exit(NULL);
 }
 
-void* BankCommision(void* bank_comm) {
-	// send to proper function
-	pthread_exit(NULL)
+void* BankCommision(void* bank) {
+	Bank bank_comm = *(Bank*)bank;
+	bank_comm.getCommisions();
+	pthread_exit(NULL);
 }
 
-int atm_num = 0;
-
-int main(int argc, char *argv[]) {   
-    	pthread_t atm[argc-1], bank_print, bank_commisiom;
+int main(int argc, char *argv[]) {  
+    	pthread_t *atm = new pthread_t[argc-1];
+	pthread_t bank_commision, bank_print;
 	int rc1, rc2, rc3;
 	int j=0;
 	Log log_file("log.txt");
@@ -50,30 +52,32 @@ int main(int argc, char *argv[]) {
 		ATM new_atm(j, argv[j], &log_file);
 		atms.push_back(new_atm);
 	}
-	for (atm_num=0; i<argc; i++) {
+	Bank *bank = new Bank;
+	for (counter=0; counter<argc-1; counter++) {
 		// build ATM thread and send to ATM handler
-		rc1 = pthread_create(&(atm[atm_num]),NULL, AtmExe, (void*)&atms[atm_num]);  //create ATM
+		rc1 = pthread_create(&(atm[counter]),NULL, AtmExe, (void*)&atms[counter]);  //create ATM
 		if (rc1) {
-			log.txt << "Error: unable to create thread, " << rc << endl;
+			cout << "Error: unable to create thread, " << rc1 << endl;
 			exit(-1);
 		}
 	}
-	rc2 = pthread_create(&(bank_print), NULL, BankPrint, (void*)&i);
+	rc2 = pthread_create(&(bank_print), NULL, BankPrint, (void*)&bank);
 	if (rc2) {
-			log.txt << "Error: unable to create thread, " << rc << endl;
+			//log.txt << "Error: unable to create thread, " << rc << endl;
 			exit(-1);
 		}
-	rc3 = pthread_create(&(bank_commision), NULL, BankCommision, (void*)&i);
+	rc3 = pthread_create(&(bank_commision), NULL, BankCommision, (void*)&bank);
 	if (rc3) {
-			log.txt << "Error: unable to create thread, " << rc << endl;
+			//log.txt << "Error: unable to create thread, " << rc << endl;
 			exit(-1);
 		}
-	for (i=0; i<argc; i++) {
-		pthread_join(atm[i]);
+	for (int i=0; i<argc-1; i++) {
+		pthread_join(atm[i], nullptr);
+		cout << "FINISH!!!!" << endl;
 	}
 
 	pthread_cancel(bank_print);
-	pthread_cancel(bank_commisiom);
+	pthread_cancel(bank_commision);
 	return 0;
 }
 

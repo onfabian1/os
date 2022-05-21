@@ -10,7 +10,7 @@
 #include <vector>
 #include "log.h"
 
-#define MAX_ARG 20
+#define MAX_ARG 5
 
 using namespace std;
 typedef enum { FALSE , TRUE } boolean;
@@ -23,12 +23,13 @@ class ATM {
 
 	public:
 	ATM(int atm_id, char* input_path, Log* log_file);
-	void run(int atm_num);
+	void run();
 	int openAccount(int _accountId, int _password, double _balance);
+	int closeAccount(int _accountId, int _password, int acc_num);
 	~ATM(){};
 };
 
-bool CheckAccExist(int _accountId);
+int CheckAccExist(int _accountId);
 bool CheckTargetAccExist(int _accountId);
 
 #endif

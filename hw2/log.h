@@ -9,7 +9,7 @@
 using namespace std;
 
 class Log {
-public:
+    public:
     Log(const string& log_file_name);
     ~Log();
 
@@ -36,7 +36,7 @@ public:
 
     void print_commission_charging(int commission, int curr_charge, int account_id);
 
-private:
+    private:
     ofstream log_file;
     pthread_mutex_t log_mutex;
 

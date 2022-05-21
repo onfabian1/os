@@ -22,7 +22,7 @@ class Bank {
     	pthread_mutex_t listWriteLock;
 
 	public:
-	Bank(double bankMoney, int bankReaders, int listReaders);
+	Bank(/*double bankMoney, int bankReaders, int listReaders*/);
 	~Bank();	
 	void getCommisions();
 	void StatusPrint();
@@ -35,7 +35,6 @@ class Bank {
 	void LockBankWrite();	
 	void UnlockBankWrite();
 	double bankMoney;
-	Log bankLog
 };
 
 #endif

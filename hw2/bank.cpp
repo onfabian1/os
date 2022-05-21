@@ -17,7 +17,7 @@ main file. This file contains the main function of smash
 using namespace std;
 extern vector<account> accounts;
 
-Bank::Bank(double bankMoney, int bankReaders, int listReaders): bankReaders(0), listReaders(0), bankMoney(0){
+Bank::Bank(/*double bankMoney, int bankReaders, int listReaders*/): bankReaders(0), listReaders(0), bankMoney(0){
 	 pthread_mutex_init(&bankReadLock ,nullptr);
 	 pthread_mutex_init(&bankWriteLock ,nullptr);
 	 pthread_mutex_init(&listReadLock ,nullptr);
@@ -69,7 +69,7 @@ void Bank::LockBankRead() {
 
 void Bank::UnlockBankRead() {
     pthread_mutex_lock(&bankReadLock);
-    bankReaders++;
+    bankReaders--;
     if(!bankReaders){
         pthread_mutex_unlock(&bankWriteLock);
     }
@@ -88,11 +88,11 @@ void Bank::getCommisions(){
 	double commisionPrecent = 3/100;
 	LockListRead();
 	for(unsigned int i=0; i<accounts.size(); i++){
-		accounts[i].ReadLock(accounts[i].accountId);
-		double accBalan = accounts[i].Balance(accounts[i].accountId, accounts[i].password);		
+		accounts[i].ReadLock();
+		double accBalan = accounts[i].Balance(accounts[i].accountId, accounts[i].password, i);		
 		double chargeRate =  accBalan*commisionPrecent;
 		accounts[i].WriteLock();
-		accounts[i].withdraw(accounts[i].accountId, accounts[i].password,chargeRate);
+		accounts[i].withdraw(accounts[i].accountId, accounts[i].password,chargeRate, i);
 		accounts[i].WriteUnlock();
 		accounts[i].ReadUnlock();
 		LockBankWrite();
