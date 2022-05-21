@@ -9,6 +9,7 @@
 #include <sys/wait.h>
 #include <vector>
 #include "log.h"
+#include "bank.h"
 
 #define MAX_ARG 5
 
@@ -30,7 +31,6 @@ class ATM {
 };
 
 int CheckAccExist(int _accountId);
-bool CheckTargetAccExist(int _accountId);
 
 #endif
 

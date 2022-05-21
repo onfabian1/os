@@ -16,6 +16,7 @@ main file.
 
 using namespace std;
 
+Bank *bank = new Bank();
 vector<ATM> atms;//This represents the list of accounts.
 int counter = 0;
 
@@ -52,7 +53,6 @@ int main(int argc, char *argv[]) {
 		ATM new_atm(j, argv[j], &log_file);
 		atms.push_back(new_atm);
 	}
-	Bank *bank = new Bank;
 	for (counter=0; counter<argc-1; counter++) {
 		// build ATM thread and send to ATM handler
 		rc1 = pthread_create(&(atm[counter]),NULL, AtmExe, (void*)&atms[counter]);  //create ATM
