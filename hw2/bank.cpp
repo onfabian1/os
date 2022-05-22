@@ -104,8 +104,18 @@ void Bank::getCommisions(){
 }
 
 void Bank::StatusPrint(){
-	
-
-
+	printf("\033[2J");
+	printf("\033[1;1H");
+	LockListRead();
+	cout << "Current Bank Status" << endl;
+	for(unsigned int i=0; i<accounts.size(); i++){
+		accounts[i].ReadLock();
+		cout << "Account " << accounts[i].accountId << ": " << "Balance - " << accounts[i].balance << " $, " << "Account Password - " << accounts[i].password << endl;
+		accounts[i].ReadLock();
+	}
+	UnlockListRead();
+	LockBankRead();
+	cout << "The bank has " << bankMoney << "$" << endl;
+	UnlockBankRead();
 
 }

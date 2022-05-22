@@ -34,6 +34,7 @@ void *AtmExe(void* m_atm) {
 void* BankPrint(void* bank) {
 	Bank bank_pri = *(Bank*)bank;
 	bank_pri.StatusPrint();
+	usleep(500000);
 	pthread_exit(NULL);
 }
 
