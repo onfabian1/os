@@ -88,13 +88,13 @@ void Bank::getCommisions(){
 	double commisionPrecent = 3/100;
 	LockListRead();
 	for(unsigned int i=0; i<accounts.size(); i++){
-		accounts[i].ReadLock();
+		//accounts[i].ReadLock();
 		double accBalan = accounts[i].Balance(accounts[i].accountId, accounts[i].password, i);		
 		double chargeRate =  accBalan*commisionPrecent;
-		accounts[i].WriteLock();
+		//accounts[i].WriteLock();
 		accounts[i].withdraw(accounts[i].accountId, accounts[i].password,chargeRate, i);
-		accounts[i].WriteUnlock();
-		accounts[i].ReadUnlock();
+		//accounts[i].WriteUnlock();
+		//accounts[i].ReadUnlock();
 		LockBankWrite();
 		bankMoney+=chargeRate;
 		UnlockBankWrite();
@@ -111,7 +111,7 @@ void Bank::StatusPrint(){
 	for(unsigned int i=0; i<accounts.size(); i++){
 		accounts[i].ReadLock();
 		cout << "Account " << accounts[i].accountId << ": " << "Balance - " << accounts[i].balance << " $, " << "Account Password - " << accounts[i].password << endl;
-		accounts[i].ReadLock();
+		accounts[i].ReadUnlock();
 	}
 	UnlockListRead();
 	LockBankRead();

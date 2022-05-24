@@ -10,8 +10,9 @@ unsigned int j=0;
 
 void account::WriteLock() {
 	pthread_mutex_lock(&balanceLock); //Write Phase
-	while(balance_read_counter != 0)
+	while(balance_read_counter != 0){
 		pthread_cond_wait(&writePhase, &balanceLock);
+	}
 	balance_read_counter = -1;
 	return;
 }
@@ -48,7 +49,9 @@ account::account(int _accountId, int _password ,double _balance): accountId(_acc
 }
 
 account::~account(){
-	 pthread_mutex_destroy(&balanceLock);
+	pthread_mutex_destroy(&balanceLock);
+	pthread_cond_destroy(&readPhase);
+	pthread_cond_destroy(&writePhase);
 }
 
 int account::deposit(int accountNum, int pass, double amount, int acc_num){
@@ -63,9 +66,9 @@ int account::deposit(int accountNum, int pass, double amount, int acc_num){
 }
 
 int account::withdraw(int accountNum, int pass, double amount, int acc_num){
-	accounts[acc_num].WriteLock();
+	this->WriteLock();
 	if(pass != accounts[acc_num].password) {
-		accounts[acc_num].WriteUnlock();
+		this->WriteUnlock();
 		return 1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
 	}
 	if ((accounts[acc_num].balance - amount) < 0) {
@@ -73,6 +76,7 @@ int account::withdraw(int accountNum, int pass, double amount, int acc_num){
 		return 2; //print "Error <ATM ID>: Your transaction failed – account id <id> balance is lower than <amount>" to log
 	}
 	accounts[acc_num].balance -= amount;
+
 	accounts[acc_num].WriteUnlock();
 	return 0; //print "<ATM ID>: Account <id> new balance is <bal> after <amount> $ was withdrew" to log
 }
