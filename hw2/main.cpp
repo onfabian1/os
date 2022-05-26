@@ -36,7 +36,7 @@ void* BankPrint(void* bank) {
 	Bank bank_pri = *(Bank*)bank;
 	while(!atms.empty()){
 		sleep(0.5);
-		bank_pri.StatusPrint();
+		//bank_pri.StatusPrint();
 	}
 	pthread_exit(NULL);
 }
@@ -45,7 +45,7 @@ void* BankCommision(void* bank) {
 	Bank bank_comm = *(Bank*)bank;
 	while(!atms.empty()){
 		sleep(3);
-		bank_comm.getCommisions();
+		//bank_comm.getCommisions();
 	}
 	pthread_exit(NULL);
 }
