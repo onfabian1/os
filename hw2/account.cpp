@@ -87,11 +87,11 @@ int account::Balance(int accountNum, int pass, int acc_num){
 	accounts[acc_num].ReadLock();
 	if(pass != accounts[acc_num].password) {
 		accounts[acc_num].ReadUnlock();
-		return 1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
+		return -1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
 	}
-	//double bal = accounts[i].balance;
+	double bal = accounts[i].balance;
 	accounts[acc_num].ReadUnlock();
-	return 0; //print "<ATM ID>: Account <id> balance is <bal>" to log
+	return bal; //print "<ATM ID>: Account <id> balance is <bal>" to log
 }
 
 int account::transfer(int accountNum, int pass, int targetAccountNum, double amount, int acc_num, int acc_tar_num){

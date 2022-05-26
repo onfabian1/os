@@ -51,6 +51,7 @@ int ATM::openAccount(int accountNum, int pass, double balan){
 int ATM::closeAccount(int accountNum, int pass, int acc_num){
 	accounts[acc_num].WriteLock();
 	if(pass != accounts[acc_num].password) {
+		accounts[acc_num].~account();
 		accounts[acc_num].WriteUnlock();
 		return -1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
 	}
@@ -95,9 +96,9 @@ void ATM::run() { //Parse the txt file in PATH and moving to func
 				sleep(1);
 				atms[atm_num].openAccount(atoi(args[1]), atoi(args[2]), atoi(args[3]));
 				bank->UnlockListWrite();  // lock accounts list
-				atms[atm_num].log_file->log_lock();
-				atms[atm_num].log_file->print_new_account(atms[atm_num].m_atm_id, atoi(args[1]), atoi(args[2]), atoi(args[3]));
-				atms[atm_num].log_file->log_unlock();
+				this->log_file->log_lock();
+				this->log_file->print_new_account(atms[atm_num].m_atm_id, atoi(args[1]), atoi(args[2]), atoi(args[3]));
+				this->log_file->log_unlock();
 				continue; //write success to log
 			}
 			bank->UnlockListWrite();  // lock accounts list
@@ -223,23 +224,32 @@ void ATM::run() { //Parse the txt file in PATH and moving to func
 
 			if(acc_num == -1) {//src acc not exist
 				sleep(1);
+				this->log_file->log_lock();
 				atms[atm_num].log_file->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[1]));
+				this->log_file->log_unlock();
 				continue;
 			}
 			else if (acc_tar_num == -1){ //dest acc not exist
 				sleep(1);
+				this->log_file->log_lock();
 				atms[atm_num].log_file->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[3]));
+				this->log_file->log_unlock();
 				continue;
 			}
 			ret = accounts[acc_num].transfer(atoi(args[1]), atoi(args[2]), atoi(args[3]), atoi(args[4]), acc_num, acc_tar_num);
 			if (ret == 1) {//pass src invalid
+				this->log_file->log_lock();
 				atms[atm_num].log_file->print_password_is_invalid(atms[atm_num].m_atm_id, atoi(args[1]));
+				this->log_file->log_unlock();
 			}
 			else if (ret == 2) {//bal<0
 				atms[atm_num].log_file->print_not_enough_to_withdrew(atms[atm_num].m_atm_id, atoi(args[1]), atoi(args[4]));
 			}
-			else //success
+			else {//success
+				this->log_file->log_lock();
 				atms[atm_num].log_file->print_transfer(atms[atm_num].m_atm_id, atoi(args[4]), atoi(args[1]), atoi(args[3]), accounts[acc_num].balance, accounts[acc_tar_num].balance);
+				this->log_file->log_unlock();
+			}
 		}
 
 		/*************************************************/
