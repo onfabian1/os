@@ -17,11 +17,11 @@ main file. This file contains the main function of smash
 using namespace std;
 extern vector<account> accounts;
 
-Bank::Bank(/*double bankMoney, int bankReaders, int listReaders*/): bankReaders(0), listReaders(0), bankMoney(0){
+Bank::Bank(Log *log_file): bankReaders(0), listReaders(0), bankMoney(0){
 	 pthread_mutex_init(&bankReadLock ,nullptr);
 	 pthread_mutex_init(&bankWriteLock ,nullptr);
 	 pthread_mutex_init(&listReadLock ,nullptr);
-	 pthread_mutex_init(&listWriteLock ,nullptr);
+	 //pthread_mutex_init(&listWriteLock ,nullptr);
 }
 
 Bank::~Bank(){
@@ -33,7 +33,7 @@ Bank::~Bank(){
 
 void Bank::LockListRead() {
     pthread_mutex_lock(&listReadLock);
-    listReaders++;
+   listReaders++;
     if(listReaders == 1){
         pthread_mutex_lock(&listWriteLock);
     }
@@ -48,7 +48,6 @@ void Bank::UnlockListRead() {
     }
     pthread_mutex_unlock(&listReadLock);
 }
-
 
 void Bank::LockListWrite() {
     pthread_mutex_lock(&listWriteLock);
@@ -85,8 +84,9 @@ void Bank::UnlockBankWrite(){
 }
 
 void Bank::getCommisions(){
-	double commisionPrecent = 3/100;
-	LockListRead();
+	srand ( time(NULL) );
+	double commisionPrecent = rand()%5 + 1;
+	LockListWrite(); //snapshot
 	for(unsigned int i=0; i<accounts.size(); i++){
 		//accounts[i].ReadLock();
 		double accBalan = accounts[i].Balance(accounts[i].accountId, accounts[i].password, i);		
@@ -98,24 +98,27 @@ void Bank::getCommisions(){
 		LockBankWrite();
 		bankMoney+=chargeRate;
 		UnlockBankWrite();
+		this->log_file->log_lock();
+		this->log_file->print_commission_charging(int(commisionPrecent), int(chargeRate), accounts[i].accountId);
+		this->log_file->log_unlock();
 	}
-	LockListRead();
+	UnlockListWrite();
 		// NEED TO IMPLEMENT HERE BANK LOG PRINTS
 }
 
 void Bank::StatusPrint(){
-	printf("\033[2J");
-	printf("\033[1;1H");
-	LockListRead();
-	cout << "Current Bank Status" << endl;
+	stringstream aux;
+	aux << "\033[2J";
+	aux << "\033[1;1H";
+	LockListWrite(); //snapshot
+	aux << "Current Bank Status" << endl;
 	for(unsigned int i=0; i<accounts.size(); i++){
-		accounts[i].ReadLock();
-		cout << "Account " << accounts[i].accountId << ": " << "Balance - " << accounts[i].balance << " $, " << "Account Password - " << accounts[i].password << endl;
-		accounts[i].ReadUnlock();
+		double accBalan = accounts[i].Balance(accounts[i].accountId, accounts[i].password, i);
+		aux << "Account " << accounts[i].accountId << ": " << "Balance - " << accBalan << " $, " << "Account Password - " << accounts[i].password << endl;
 	}
-	UnlockListRead();
+	UnlockListWrite();
 	LockBankRead();
-	cout << "The bank has " << bankMoney << "$" << endl;
+	aux << "The bank has " << bankMoney << "$" << endl;
 	UnlockBankRead();
-
+	cout << aux.str();
 }

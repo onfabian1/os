@@ -9,20 +9,23 @@
 #include <sys/wait.h>
 #include <pthread.h>
 #include <vector>
+#include "log.h"
+
 using namespace std;
 
 class Bank {
 	private:
-	//pthread_mutex_t globalBankLock;
+	pthread_mutex_t globalBankLock;
 	int bankReaders;
 	int listReaders;
     	pthread_mutex_t bankReadLock;
     	pthread_mutex_t bankWriteLock;
     	pthread_mutex_t listReadLock;
     	pthread_mutex_t listWriteLock;
+	Log *log_file;
 
 	public:
-	Bank(/*double bankMoney, int bankReaders, int listReaders*/);
+	Bank(Log* log_file);
 	~Bank();	
 	void getCommisions();
 	void StatusPrint();

@@ -9,7 +9,7 @@
 #include <fstream>
 #include <pthread.h>
 #include "account.h"
-#include "bank.h"
+
 
 const unsigned int ATM_USLEEP = 100000;
 
@@ -74,6 +74,7 @@ void ATM::run() { //Parse the txt file in PATH and moving to func
 	char* args[MAX_ARG];  
 
 	while(!fd.eof()) {
+		usleep(ATM_USLEEP);
 		getline(fd, line);
 		cmd = strtok(&line[0], delimiters);
 		if (cmd == NULL) {
@@ -86,18 +87,17 @@ void ATM::run() { //Parse the txt file in PATH and moving to func
 		}
 		/*************************************************/
 		if (!strcmp(args[0], "O")) {
-			cout << "O1 " << atm_num << endl;
 			bank->LockListWrite();  // lock accounts list
 			acc_num = CheckAccExist(atoi(args[1]));
+			//cout << "O " << endl;
 
 			if (acc_num == -1) {
+				sleep(1);
 				atms[atm_num].openAccount(atoi(args[1]), atoi(args[2]), atoi(args[3]));
-				cout << "O2 " << atm_num << endl;
 				bank->UnlockListWrite();  // lock accounts list
 				atms[atm_num].log_file->log_lock();
 				atms[atm_num].log_file->print_new_account(atms[atm_num].m_atm_id, atoi(args[1]), atoi(args[2]), atoi(args[3]));
 				atms[atm_num].log_file->log_unlock();
-				sleep(1);
 				continue; //write success to log
 			}
 			bank->UnlockListWrite();  // lock accounts list
@@ -109,10 +109,10 @@ void ATM::run() { //Parse the txt file in PATH and moving to func
 		}
 		/*************************************************/
 		else if (!strcmp(args[0], "D")) {
-			cout << "D!! " << atm_num << endl;
 			bank->LockListRead();  // lock accounts list
 			acc_num = CheckAccExist(atoi(args[1]));
 			bank->UnlockListRead();  // Unlock accounts list
+			//cout << "D " << endl;
 			if (acc_num == -1) {//acc not exist
 				atms[atm_num].log_file->log_lock();
 				atms[atm_num].log_file->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[1])); 
@@ -123,22 +123,20 @@ void ATM::run() { //Parse the txt file in PATH and moving to func
 					atms[atm_num].log_file->log_lock();
 					atms[atm_num].log_file->print_password_is_invalid(atms[atm_num].m_atm_id, atoi(args[1]));
 					atms[atm_num].log_file->log_unlock();
-					sleep(1);
 				}
 			else {//success
 				atms[atm_num].log_file->log_lock();
 				atms[atm_num].log_file->print_deposit(atms[atm_num].m_atm_id, atoi(args[1]),accounts[acc_num].balance, atoi(args[3]));
 				atms[atm_num].log_file->log_unlock();
-				sleep(1);
 			}
 			
 		}
 		/*************************************************/
 		else if (!strcmp(args[0], "W")) {
-			cout << "W!! " << atm_num << endl;
 			bank->LockListRead();  // lock accounts list
 			acc_num = CheckAccExist(atoi(args[1]));
 			bank->UnlockListRead();  // Unlock accounts list
+			//cout << "W " << endl;
 			if (acc_num == -1) {//acc not exist
 				atms[atm_num].log_file->log_lock();
 				atms[atm_num].log_file->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[1])); 
@@ -151,24 +149,21 @@ void ATM::run() { //Parse the txt file in PATH and moving to func
 				atms[atm_num].log_file->log_lock();
 				atms[atm_num].log_file->print_password_is_invalid(atms[atm_num].m_atm_id, atoi(args[1]));
 				atms[atm_num].log_file->log_unlock();
-				sleep(1);
 			}
 			else if (ret == 2) {//bal<0
 				atms[atm_num].log_file->log_lock();
 				atms[atm_num].log_file->print_not_enough_to_withdrew(atms[atm_num].m_atm_id, atoi(args[1]), atoi(args[3]));
 				atms[atm_num].log_file->log_unlock();
-				sleep(1);
 			}
 			else {//success
 				atms[atm_num].log_file->log_lock();
 				atms[atm_num].log_file->print_withdrew(atms[atm_num].m_atm_id, atoi(args[1]),accounts[acc_num].balance, atoi(args[3]));
 				atms[atm_num].log_file->log_unlock();
-				sleep(1);
 			}
 		}
 		/*************************************************/
 		else if (!strcmp(args[0], "B")) {
-			cout << "B!! " << atm_num << endl;
+			//cout << "B " << endl;
 			bank->LockListRead();  // lock accounts list
 			acc_num = CheckAccExist(atoi(args[1]));
 			bank->UnlockListRead();  // Unlock accounts list
@@ -182,44 +177,42 @@ void ATM::run() { //Parse the txt file in PATH and moving to func
 				atms[atm_num].log_file->log_lock();
 				atms[atm_num].log_file->print_password_is_invalid(atms[atm_num].m_atm_id, atoi(args[1]));
 				atms[atm_num].log_file->log_unlock();
-				sleep(1);
 			}
 			else { //success
 				atms[atm_num].log_file->log_lock();
 				atms[atm_num].log_file->print_curr_balance(atms[atm_num].m_atm_id, atoi(args[1]),accounts[acc_num].balance);
 				atms[atm_num].log_file->log_unlock();
-				sleep(1);
 			}
 		}
 		/*************************************************/
 		else if (!strcmp(args[0], "Q")) {
-			cout << "Q!! " << atm_num << endl;
-			bank->LockListRead();  // lock accounts list
+			//cout << "Q " << endl;
+			bank->LockListWrite();  // lock accounts list
 			acc_num = CheckAccExist(atoi(args[1]));
-			bank->UnlockListRead();  // Unlock accounts list
 
 			if (acc_num == -1) { //acc not exist
+				bank->UnlockListWrite();  // Unlock accounts list
 				atms[atm_num].log_file->log_lock();
 				atms[atm_num].log_file->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[1])); 
 				atms[atm_num].log_file->log_unlock();
 				sleep(1);
 			}
 			else if (atms[atm_num].closeAccount(atoi(args[1]), atoi(args[2]), acc_num) == -1) {//pass invalid
+				bank->UnlockListWrite();  // Unlock accounts list
 				atms[atm_num].log_file->log_lock();
 				atms[atm_num].log_file->print_password_is_invalid(atms[atm_num].m_atm_id, atoi(args[1]));
 				atms[atm_num].log_file->log_unlock();
-				sleep(1);
 			}
 			else {//success
+				bank->UnlockListWrite();  // Unlock accounts list
 				atms[atm_num].log_file->log_lock();
 				atms[atm_num].log_file->print_delete_account(atms[atm_num].m_atm_id, atoi(args[1]),accounts[acc_num].balance);
 				atms[atm_num].log_file->log_unlock();
-				sleep(1);
 			}
 		}
 		/*************************************************/
 		else if (!strcmp(args[0], "T")) {
-			cout << "T!! " << atm_num << endl;
+			//cout << "T " << endl;
 			bank->LockListRead();  // lock accounts list
 			acc_num = CheckAccExist(atoi(args[1]));
 			bank->UnlockListRead();  // Unlock accounts list
@@ -228,24 +221,25 @@ void ATM::run() { //Parse the txt file in PATH and moving to func
 			acc_tar_num = CheckAccExist(atoi(args[3]));
 			bank->UnlockListRead();  // Unlock accounts list
 
-			if(acc_num == -1)//src acc not exist
-				log_file->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[1]));
-
-			else if (acc_tar_num == -1) //dest acc not exist
-				log_file->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[3]));
-
+			if(acc_num == -1) {//src acc not exist
+				sleep(1);
+				atms[atm_num].log_file->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[1]));
+				continue;
+			}
+			else if (acc_tar_num == -1){ //dest acc not exist
+				sleep(1);
+				atms[atm_num].log_file->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[3]));
+				continue;
+			}
 			ret = accounts[acc_num].transfer(atoi(args[1]), atoi(args[2]), atoi(args[3]), atoi(args[4]), acc_num, acc_tar_num);
 			if (ret == 1) {//pass src invalid
 				atms[atm_num].log_file->print_password_is_invalid(atms[atm_num].m_atm_id, atoi(args[1]));
-				sleep(1);
 			}
 			else if (ret == 2) {//bal<0
 				atms[atm_num].log_file->print_not_enough_to_withdrew(atms[atm_num].m_atm_id, atoi(args[1]), atoi(args[4]));
-				sleep(1);
 			}
 			else //success
 				atms[atm_num].log_file->print_transfer(atms[atm_num].m_atm_id, atoi(args[4]), atoi(args[1]), atoi(args[3]), accounts[acc_num].balance, accounts[acc_tar_num].balance);
-			sleep(1);
 		}
 
 		/*************************************************/

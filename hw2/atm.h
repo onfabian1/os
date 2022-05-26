@@ -8,7 +8,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <vector>
-#include "log.h"
 #include "bank.h"
 
 #define MAX_ARG 5
