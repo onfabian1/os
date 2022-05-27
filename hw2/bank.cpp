@@ -114,13 +114,15 @@ void Bank::StatusPrint(){
 	this->LockListWrite(); //snapshot
 	aux << "Current Bank Status" << endl;
 	for(unsigned int i=0; i<accounts.size(); i++){
-		accounts[i].ReadLock();
+		//accounts[i].ReadLock();
 		//double accBalan = accounts[i].Balance(accounts[i].accountId, accounts[i].password, i);
 		aux << "Account " << accounts[i].accountId << ": " << "Balance - " << accounts[i].balance << " $, " << "Account Password - " << accounts[i].password << endl;
-		accounts[i].ReadUnlock();
+		//accounts[i].ReadUnlock();
 	}
 	UnlockListWrite();
 	LockBankRead();
+	aux << "." << endl;
+	aux << "." << endl;
 	aux << "The bank has " << bankMoney << "$" << endl;
 	UnlockBankRead();
 	cout << aux.str();
