@@ -22,11 +22,11 @@ class Bank {
     	pthread_mutex_t bankWriteLock;
     	pthread_mutex_t listReadLock;
     	pthread_mutex_t listWriteLock;
-	Log *log_file;
 
 	public:
-	Bank(Log* log_file);
-	~Bank();	
+	Bank();
+	~Bank();
+	Log *bank_log;	
 	void getCommisions();
 	void StatusPrint();
 	void LockListRead();

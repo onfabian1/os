@@ -69,6 +69,7 @@ int account::deposit(int accountNum, int pass, double amount, int acc_num){
 
 int account::withdraw(int accountNum, int pass, double amount, int acc_num){
 	accounts[acc_num].WriteLock();
+	//cout << "w" << endl;
 	if(pass != accounts[acc_num].password) {
 		accounts[acc_num].WriteUnlock();
 		return 1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
@@ -78,7 +79,6 @@ int account::withdraw(int accountNum, int pass, double amount, int acc_num){
 		return 2; //print "Error <ATM ID>: Your transaction failed – account id <id> balance is lower than <amount>" to log
 	}
 	accounts[acc_num].balance -= amount;
-
 	accounts[acc_num].WriteUnlock();
 	return 0; //print "<ATM ID>: Account <id> new balance is <bal> after <amount> $ was withdrew" to log
 }
@@ -96,23 +96,25 @@ int account::Balance(int accountNum, int pass, int acc_num){
 
 int account::transfer(int accountNum, int pass, int targetAccountNum, double amount, int acc_num, int acc_tar_num){
 	accounts[acc_num].WriteLock(); //catch source write lock 
-	accounts[acc_tar_num].WriteLock(); //catch destination write lock (potential DEADLOCK w/BANK)
+	//accounts[acc_tar_num].WriteLock(); //catch destination write lock
 
 	if(pass != accounts[acc_num].password) { //check src pass
 		accounts[acc_num].WriteUnlock();
-		accounts[acc_tar_num].WriteUnlock();
+		//accounts[acc_tar_num].WriteUnlock();
 		return 1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
 	}
 	
 	if ((accounts[acc_num].balance - amount) < 0) { //src balance
 		accounts[acc_num].WriteUnlock();
-		accounts[acc_tar_num].WriteUnlock();
+		//accounts[acc_tar_num].WriteUnlock();
 		return 2; //print "Error <ATM ID>: Your transaction failed – account id <id> balance is lower than <amount>" to log
 	}
 	
 	accounts[acc_num].balance -= amount; //src balance
-	accounts[acc_tar_num].balance += amount; //dest balance
 	accounts[acc_num].WriteUnlock();
+	accounts[acc_tar_num].WriteLock(); //catch destination write lock
+	accounts[acc_tar_num].balance += amount; //dest balance
+	//accounts[acc_num].WriteUnlock();
 	accounts[acc_tar_num].WriteUnlock();
 	return 0; //print "<ATM ID>: Transfer <amount> from account <account> to account <target_account> new account balance is <account_bal> new target account balance is <target_bal>" to log	
 }

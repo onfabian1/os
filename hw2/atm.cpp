@@ -15,9 +15,10 @@ const unsigned int ATM_USLEEP = 100000;
 
 using namespace std;
 
-extern Bank *bank;
+//extern Bank *bank;
 extern vector<ATM> atms;
 extern vector<account> accounts;
+//extern int listReaders;
 
 /*************************************************/
 // Parse of txt -> line by line
@@ -27,10 +28,11 @@ extern vector<account> accounts;
 // returns counter-- when EOF
 /*************************************************/
 
-ATM::ATM(int atm_id, char* input_path, Log *log_file) {
+ATM::ATM(int atm_id, char* input_path, Log *log_file, Bank *bank) {
 	this->m_atm_id = atm_id;
 	this->m_input_path = input_path;
 	this->log_file = log_file;
+	this->bank = bank;
 }
 
 int CheckAccExist(int accountNum) { //returns acc_num in acc list
@@ -158,7 +160,7 @@ void ATM::run() { //Parse the txt file in PATH and moving to func
 			}
 			else {//success
 				atms[atm_num].log_file->log_lock();
-				atms[atm_num].log_file->print_withdrew(atms[atm_num].m_atm_id, atoi(args[1]),accounts[acc_num].balance, atoi(args[3]));
+				atms[atm_num].log_file->print_withdrew(atms[atm_num].m_atm_id, atoi(args[1]), accounts[acc_num].balance, atoi(args[3]));
 				atms[atm_num].log_file->log_unlock();
 			}
 		}
@@ -214,15 +216,12 @@ void ATM::run() { //Parse the txt file in PATH and moving to func
 		/*************************************************/
 		else if (!strcmp(args[0], "T")) {
 			//cout << "T " << endl;
-			bank->LockListRead();  // lock accounts list
+			bank->LockListWrite();  // lock accounts list
 			acc_num = CheckAccExist(atoi(args[1]));
-			bank->UnlockListRead();  // Unlock accounts list
-
-			bank->LockListRead();// lock accounts list
 			acc_tar_num = CheckAccExist(atoi(args[3]));
-			bank->UnlockListRead();  // Unlock accounts list
 
 			if(acc_num == -1) {//src acc not exist
+				bank->UnlockListWrite();  // Unlock accounts list
 				sleep(1);
 				this->log_file->log_lock();
 				atms[atm_num].log_file->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[1]));
@@ -230,6 +229,7 @@ void ATM::run() { //Parse the txt file in PATH and moving to func
 				continue;
 			}
 			else if (acc_tar_num == -1){ //dest acc not exist
+				bank->UnlockListWrite();  // Unlock accounts list
 				sleep(1);
 				this->log_file->log_lock();
 				atms[atm_num].log_file->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[3]));
@@ -238,14 +238,17 @@ void ATM::run() { //Parse the txt file in PATH and moving to func
 			}
 			ret = accounts[acc_num].transfer(atoi(args[1]), atoi(args[2]), atoi(args[3]), atoi(args[4]), acc_num, acc_tar_num);
 			if (ret == 1) {//pass src invalid
+				bank->UnlockListWrite();  // Unlock accounts list
 				this->log_file->log_lock();
 				atms[atm_num].log_file->print_password_is_invalid(atms[atm_num].m_atm_id, atoi(args[1]));
 				this->log_file->log_unlock();
 			}
 			else if (ret == 2) {//bal<0
+				bank->UnlockListWrite();  // Unlock accounts list
 				atms[atm_num].log_file->print_not_enough_to_withdrew(atms[atm_num].m_atm_id, atoi(args[1]), atoi(args[4]));
 			}
 			else {//success
+				bank->UnlockListWrite();  // Unlock accounts list
 				this->log_file->log_lock();
 				atms[atm_num].log_file->print_transfer(atms[atm_num].m_atm_id, atoi(args[4]), atoi(args[1]), atoi(args[3]), accounts[acc_num].balance, accounts[acc_tar_num].balance);
 				this->log_file->log_unlock();

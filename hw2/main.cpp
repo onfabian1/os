@@ -15,9 +15,7 @@ main file.
 #include "bank.h"
 
 using namespace std;
-
-Log log_file("log.txt");
-Bank *bank = new Bank(&log_file);
+//int listReaders = 0;
 vector<ATM> atms;//This represents the list of accounts.
 int counter = 0;
 
@@ -36,7 +34,7 @@ void* BankPrint(void* bank) {
 	Bank bank_pri = *(Bank*)bank;
 	while(!atms.empty()){
 		sleep(0.5);
-		//bank_pri.StatusPrint();
+		bank_pri.StatusPrint();
 	}
 	pthread_exit(NULL);
 }
@@ -45,7 +43,7 @@ void* BankCommision(void* bank) {
 	Bank bank_comm = *(Bank*)bank;
 	while(!atms.empty()){
 		sleep(3);
-		//bank_comm.getCommisions();
+		bank_comm.getCommisions();
 	}
 	pthread_exit(NULL);
 }
@@ -53,10 +51,13 @@ void* BankCommision(void* bank) {
 int main(int argc, char *argv[]) {  
     	pthread_t *atm = new pthread_t[argc-1];
 	pthread_t bank_commision, bank_print;
+	Bank bank;
+	Log log_file("log.txt");
+	bank.bank_log = &log_file;
 	int rc1, rc2, rc3;
 	int j=0;
 	for (j=1; j<=argc; j++) {
-		ATM new_atm(j, argv[j], &log_file);
+		ATM new_atm(j, argv[j], &log_file, &bank);
 		atms.push_back(new_atm);
 	}
 	for (counter=0; counter<argc-1; counter++) {

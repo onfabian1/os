@@ -18,11 +18,12 @@ typedef enum { FALSE , TRUE } boolean;
 class ATM {
 	private:
 	Log *log_file;
+	Bank *bank;
 	int m_atm_id;
 	char* m_input_path;
 
 	public:
-	ATM(int atm_id, char* input_path, Log* log_file);
+	ATM(int atm_id, char* input_path, Log* log_file, Bank *bank);
 	void run();
 	int openAccount(int _accountId, int _password, double _balance);
 	int closeAccount(int _accountId, int _password, int acc_num);
