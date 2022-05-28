@@ -11,6 +11,8 @@ main file. This file contains the main function of smash
 #include <string.h>
 #include <pthread.h>
 #include <iostream>
+#include <iomanip>
+#include <cmath>
 #include "bank.h"
 #include "account.h"
 
@@ -91,11 +93,11 @@ void Bank::getCommisions(){
 	for(unsigned int i=0; i<accounts.size(); i++){
 		//accounts[i].ReadLock();
 		double accBalan = accounts[i].balance;
-		double chargeRate =  accBalan*commisionPrecent/100;
+		////accounts[i].ReadUnlock();
+		double chargeRate = round( accBalan*commisionPrecent/100);
 		//accounts[i].WriteLock();
 		accounts[i].balance -= chargeRate;
 		//accounts[i].WriteUnlock();
-		//accounts[i].ReadUnlock();
 		this->LockBankWrite();
 		bankMoney += chargeRate;
 		this->UnlockBankWrite();
@@ -109,14 +111,15 @@ void Bank::getCommisions(){
 
 void Bank::StatusPrint(){
 	stringstream aux;
-	aux << "\033[2J";
-	aux << "\033[1;1H";
+	aux << "\033[2J\033[1;1H";
+	//aux << "\033[2J";
+	//aux << "\033[1;1H";
 	this->LockListWrite(); //snapshot
 	aux << "Current Bank Status" << endl;
 	for(unsigned int i=0; i<accounts.size(); i++){
 		//accounts[i].ReadLock();
 		//double accBalan = accounts[i].Balance(accounts[i].accountId, accounts[i].password, i);
-		aux << "Account " << accounts[i].accountId << ": " << "Balance - " << accounts[i].balance << " $, " << "Account Password - " << accounts[i].password << endl;
+		aux << "Account " << accounts[i].accountId << ": " << "Balance - " << accounts[i].balance << " $, " << "Account Password - " << setw(4) << setfill('0') << accounts[i].password << endl;
 		//accounts[i].ReadUnlock();
 	}
 	UnlockListWrite();
