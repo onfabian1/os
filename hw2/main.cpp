@@ -13,10 +13,12 @@ main file.
 #include <iostream>
 #include "atm.h"
 #include "bank.h"
+#include "account.h"
 
 using namespace std;
 //int listReaders = 0;
 vector<ATM> atms;//This represents the list of accounts.
+extern vector<account> accounts;
 int counter = 0;
 bool FINISH = false;
 
@@ -65,18 +67,18 @@ int main(int argc, char *argv[]) {
 		// build ATM thread and send to ATM handler
 		rc1 = pthread_create(&(atm[counter]),NULL, AtmExe, (void*)&atms[counter]);  //create ATM
 		if (rc1) {
-			cout << "Error: unable to create thread, " << rc1 << endl;
+			perror("pthread_create: failed");
 			exit(-1);
 		}
 	}
 	rc2 = pthread_create(&(bank_print), NULL, BankPrint, (void*)&bank);
 	if (rc2) {
-			//log.txt << "Error: unable to create thread, " << rc << endl;
+			perror("pthread_create: failed");
 			exit(-1);
 		}
 	rc3 = pthread_create(&(bank_commision), NULL, BankCommision, (void*)&bank);
 	if (rc3) {
-			//log.txt << "Error: unable to create thread, " << rc << endl;
+			perror("pthread_create: failed");
 			exit(-1);
 		}
 	for (int i=0; i<argc-1; i++) {
@@ -84,6 +86,10 @@ int main(int argc, char *argv[]) {
 		//cout << "FINISH!!!!" << endl;
 	}
 	FINISH = true;
+	for (unsigned int i=0; i<accounts.size(); i++) {
+		accounts[i].~account();
+		accounts.erase(accounts.begin()+i); //remove from list accounts
+	}
 	pthread_cancel(bank_print);
 	pthread_cancel(bank_commision);
 	return 0;

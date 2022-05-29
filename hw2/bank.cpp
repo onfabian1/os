@@ -91,13 +91,13 @@ void Bank::getCommisions(){
 	double commisionPrecent = rand()%5 + 1;
 	this->LockListWrite(); //snapshot
 	for(unsigned int i=0; i<accounts.size(); i++){
-		//accounts[i].ReadLock();
+		accounts[i].ReadLock();
 		double accBalan = accounts[i].balance;
-		////accounts[i].ReadUnlock();
+		accounts[i].ReadUnlock();
 		double chargeRate = round( accBalan*commisionPrecent/100);
-		//accounts[i].WriteLock();
+		accounts[i].WriteLock();
 		accounts[i].balance -= chargeRate;
-		//accounts[i].WriteUnlock();
+		accounts[i].WriteUnlock();
 		this->LockBankWrite();
 		bankMoney += chargeRate;
 		this->UnlockBankWrite();
@@ -117,10 +117,10 @@ void Bank::StatusPrint(){
 	this->LockListWrite(); //snapshot
 	aux << "Current Bank Status" << endl;
 	for(unsigned int i=0; i<accounts.size(); i++){
-		//accounts[i].ReadLock();
+		accounts[i].ReadLock();
 		//double accBalan = accounts[i].Balance(accounts[i].accountId, accounts[i].password, i);
 		aux << "Account " << accounts[i].accountId << ": " << "Balance - " << accounts[i].balance << " $, " << "Account Password - " << setw(4) << setfill('0') << accounts[i].password << endl;
-		//accounts[i].ReadUnlock();
+		accounts[i].ReadUnlock();
 	}
 	UnlockListWrite();
 	LockBankRead();

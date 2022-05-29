@@ -54,11 +54,12 @@ int ATM::closeAccount(int accountNum, int pass, int acc_num){
 	accounts[acc_num].WriteLock();
 	sleep(1);
 	if(pass != accounts[acc_num].password) {
-		accounts[acc_num].~account();
+		//accounts[acc_num].~account();
 		accounts[acc_num].WriteUnlock();
 		return -1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
 	}
 	accounts[acc_num].WriteUnlock(); //could be a problem but for now I dont see another solution	
+	accounts[acc_num].~account();
 	accounts.erase(accounts.begin()+acc_num); //remove from list accounts
 	return 0; //print "<ATM ID>: Account <id> is now closed. Balance was <bal>" to log
 }
