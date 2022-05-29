@@ -9,7 +9,7 @@ unsigned int i=0;
 unsigned int j=0;
 
 void account::WriteLock() {
-	sleep(1);
+	//sleep(1);
 	pthread_mutex_lock(&balanceLock); //Write Phase
 	while(balance_read_counter != 0){
 		pthread_cond_wait(&writePhase, &balanceLock);
@@ -27,7 +27,7 @@ void account::WriteUnlock() {
 }
 
 void account::ReadLock() {
-	sleep(1);
+	//sleep(1);
 	pthread_mutex_lock(&balanceLock); //Read Phase
 	while (balance_read_counter == -1)
 		pthread_cond_wait(&readPhase, &balanceLock);
@@ -58,6 +58,7 @@ account::~account(){
 
 int account::deposit(int accountNum, int pass, double amount, int acc_num){
 	accounts[acc_num].WriteLock();
+	sleep(1);
 	if(pass != accounts[acc_num].password) {
 		accounts[acc_num].WriteUnlock();
 		return -1; //print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
@@ -69,6 +70,7 @@ int account::deposit(int accountNum, int pass, double amount, int acc_num){
 
 int account::withdraw(int accountNum, int pass, double amount, int acc_num){
 	accounts[acc_num].WriteLock();
+	sleep(1);
 	//cout << "w" << endl;
 	if(pass != accounts[acc_num].password) {
 		accounts[acc_num].WriteUnlock();
@@ -85,6 +87,7 @@ int account::withdraw(int accountNum, int pass, double amount, int acc_num){
 
 int account::Balance(int accountNum, int pass, int acc_num){
 	accounts[acc_num].ReadLock();
+	sleep(1);
 	if(pass != accounts[acc_num].password) {
 		accounts[acc_num].ReadUnlock();
 		return -1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
@@ -96,6 +99,7 @@ int account::Balance(int accountNum, int pass, int acc_num){
 
 int account::transfer(int accountNum, int pass, int targetAccountNum, double amount, int acc_num, int acc_tar_num){
 	accounts[acc_num].WriteLock(); //catch source write lock 
+	sleep(1);
 	//accounts[acc_tar_num].WriteLock(); //catch destination write lock
 
 	if(pass != accounts[acc_num].password) { //check src pass

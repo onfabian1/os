@@ -52,6 +52,7 @@ int ATM::openAccount(int accountNum, int pass, double balan){
 
 int ATM::closeAccount(int accountNum, int pass, int acc_num){
 	accounts[acc_num].WriteLock();
+	sleep(1);
 	if(pass != accounts[acc_num].password) {
 		accounts[acc_num].~account();
 		accounts[acc_num].WriteUnlock();

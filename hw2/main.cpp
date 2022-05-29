@@ -18,6 +18,7 @@ using namespace std;
 //int listReaders = 0;
 vector<ATM> atms;//This represents the list of accounts.
 int counter = 0;
+bool FINISH = false;
 
 //**************************************************************************************
 // function name: main
@@ -32,7 +33,7 @@ void *AtmExe(void* m_atm) {
 
 void* BankPrint(void* bank) {
 	Bank& bank_pri = *(Bank*)bank;
-	while(!atms.empty()){
+	while(!FINISH){
 		sleep(0.5);
 		bank_pri.StatusPrint();
 	}
@@ -41,7 +42,7 @@ void* BankPrint(void* bank) {
 
 void* BankCommision(void* bank) {
 	Bank& bank_comm = *(Bank*)bank;
-	while(!atms.empty()){
+	while(!FINISH){
 		sleep(3);
 		bank_comm.getCommisions();
 	}
@@ -80,9 +81,9 @@ int main(int argc, char *argv[]) {
 		}
 	for (int i=0; i<argc-1; i++) {
 		pthread_join(atm[i], nullptr);
-		cout << "FINISH!!!!" << endl;
+		//cout << "FINISH!!!!" << endl;
 	}
-
+	FINISH = true;
 	pthread_cancel(bank_print);
 	pthread_cancel(bank_commision);
 	return 0;
