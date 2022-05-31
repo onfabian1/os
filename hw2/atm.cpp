@@ -70,8 +70,8 @@ void ATM::run() { //Parse the txt file in PATH and moving to func
 	ifstream fd;
 	fd.open(this->m_input_path);
 	if (fd.fail()) {
-		perror("");
-		exit(1);
+		cout << "Bank error: illegal arguments" << endl;
+		exit(-1);
 	}
 	char* cmd;
 	string line;

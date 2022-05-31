@@ -52,6 +52,10 @@ void* BankCommision(void* bank) {
 }
 
 int main(int argc, char *argv[]) {  
+	if (argc == 1) {
+		cout << "Bank error: illegal arguments" << endl;
+		exit(-1);
+	}
     	pthread_t *atm = new pthread_t[argc-1];
 	pthread_t bank_commision, bank_print;
 	Bank bank;
