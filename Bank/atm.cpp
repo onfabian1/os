@@ -59,7 +59,7 @@ int ATM::closeAccount(int accountNum, int pass, int acc_num){
 		return -1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
 	}
 	accounts[acc_num].WriteUnlock(); //could be a problem but for now I dont see another solution	
-	accounts[acc_num].~account();
+	//accounts[acc_num].~account();
 	accounts.erase(accounts.begin()+acc_num); //remove from list accounts
 	return 0; //print "<ATM ID>: Account <id> is now closed. Balance was <bal>" to log
 }
@@ -67,6 +67,7 @@ int ATM::closeAccount(int accountNum, int pass, int acc_num){
 void ATM::run() { //Parse the txt file in PATH and moving to func
 	int atm_num = this->m_atm_id-1;
 	int i = 0, acc_num, acc_tar_num, ret;
+	double bala;
 	ifstream fd;
 	fd.open(this->m_input_path);
 	if (fd.fail()) {
@@ -194,15 +195,18 @@ void ATM::run() { //Parse the txt file in PATH and moving to func
 			//cout << "Q " << endl;
 			bank->LockListWrite();  // lock accounts list
 			acc_num = CheckAccExist(atoi(args[1]));
-
 			if (acc_num == -1) { //acc not exist
 				bank->UnlockListWrite();  // Unlock accounts list
 				atms[atm_num].log_file->log_lock();
 				atms[atm_num].log_file->print_account_not_exist(atms[atm_num].m_atm_id, atoi(args[1])); 
 				atms[atm_num].log_file->log_unlock();
 				sleep(1);
+				continue;
 			}
-			else if (atms[atm_num].closeAccount(atoi(args[1]), atoi(args[2]), acc_num) == -1) {//pass invalid
+			else 
+				bala = accounts[acc_num].balance;
+
+			if (atms[atm_num].closeAccount(atoi(args[1]), atoi(args[2]), acc_num) == -1) {//pass invalid
 				bank->UnlockListWrite();  // Unlock accounts list
 				atms[atm_num].log_file->log_lock();
 				atms[atm_num].log_file->print_password_is_invalid(atms[atm_num].m_atm_id, atoi(args[1]));
@@ -211,7 +215,7 @@ void ATM::run() { //Parse the txt file in PATH and moving to func
 			else {//success
 				bank->UnlockListWrite();  // Unlock accounts list
 				atms[atm_num].log_file->log_lock();
-				atms[atm_num].log_file->print_delete_account(atms[atm_num].m_atm_id, atoi(args[1]),accounts[acc_num].balance);
+				atms[atm_num].log_file->print_delete_account(atms[atm_num].m_atm_id, atoi(args[1]),bala);
 				atms[atm_num].log_file->log_unlock();
 			}
 		}

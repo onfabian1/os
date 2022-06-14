@@ -1,12 +1,31 @@
-#include "account.h"
-#include <iostream>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h> 
+#include <stdio.h>
+#include <vector>
+#include <ctime>
+#include <stdlib.h>
+#include <string.h>
 #include <pthread.h>
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+#include "bank.h"
+#include "account.h"
+#include <cstddef>
 
 using namespace std;
 
 vector<account> accounts; //This represents the list of accounts.
 unsigned int i=0;
 unsigned int j=0;
+
+account::account(int _accountId, int _password ,double _balance): accountId(_accountId), password(_password), balance(_balance) {
+		pthread_mutex_init(&balanceLock, NULL);
+		pthread_cond_init(&readPhase,NULL);
+		pthread_cond_init(&writePhase,NULL);
+		balance_read_counter = 0;
+}
 
 void account::WriteLock() {
 	//sleep(1);
@@ -41,13 +60,6 @@ void account::ReadUnlock() {
 		pthread_cond_signal(&writePhase);
 	pthread_mutex_unlock(&balanceLock);
 	return; 
-}
-
-account::account(int _accountId, int _password ,double _balance): accountId(_accountId), password(_password), balance(_balance) {
-		pthread_mutex_init(&balanceLock, nullptr);
-		pthread_cond_init(&readPhase,NULL);
-		pthread_cond_init(&writePhase,NULL);
-		balance_read_counter = 0;
 }
 
 account::~account(){
@@ -92,7 +104,7 @@ int account::Balance(int accountNum, int pass, int acc_num){
 		accounts[acc_num].ReadUnlock();
 		return -1;//print "Error <ATM ID>: Your transaction failed – password for account id <id> is incorrect" to log
 	}
-	double bal = accounts[i].balance;
+	double bal = accounts[acc_num].balance;
 	accounts[acc_num].ReadUnlock();
 	return bal; //print "<ATM ID>: Account <id> balance is <bal>" to log
 }

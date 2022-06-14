@@ -17,14 +17,16 @@ main file. This file contains the main function of smash
 #include "account.h"
 
 using namespace std;
+//extern Log bank_log;
 extern vector<account> accounts;
 //extern int listReaders;
 
-Bank::Bank(): bankReaders(0), listReaders(0), bankMoney(0){
-	 pthread_mutex_init(&bankReadLock ,nullptr);
-	 pthread_mutex_init(&bankWriteLock ,nullptr);
-	 pthread_mutex_init(&listReadLock ,nullptr);
-	 pthread_mutex_init(&listWriteLock ,nullptr);
+Bank::Bank(Log *log_file): bankReaders(0), listReaders(0), bankMoney(0){
+	 this->bank_log = log_file;
+	 pthread_mutex_init(&bankReadLock ,NULL);
+	 pthread_mutex_init(&bankWriteLock ,NULL);
+	 pthread_mutex_init(&listReadLock ,NULL);
+	 pthread_mutex_init(&listWriteLock ,NULL);
 }
 
 Bank::~Bank(){
@@ -102,8 +104,11 @@ void Bank::getCommisions(){
 		bankMoney += chargeRate;
 		this->UnlockBankWrite();
 		this->bank_log->log_lock();
+		//bank_log.log_lock();
 		this->bank_log->print_commission_charging(int(commisionPrecent), int(chargeRate), accounts[i].accountId);
+		//bank_log.print_commission_charging(int(commisionPrecent), int(chargeRate), accounts[i].accountId);
 		this->bank_log->log_unlock();
+		//bank_log.log_unlock();
 	}
 	this->UnlockListWrite();
 		// NEED TO IMPLEMENT HERE BANK LOG PRINTS

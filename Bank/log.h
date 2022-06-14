@@ -10,7 +10,7 @@ using namespace std;
 
 class Log {
     public:
-    Log(const string& log_file_name);
+    Log(const char* log_file_name);
     ~Log();
 
     void log_lock();

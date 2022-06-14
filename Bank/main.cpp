@@ -16,6 +16,8 @@ main file.
 #include "account.h"
 
 using namespace std;
+
+//Log log_file("log.txt");
 //int listReaders = 0;
 vector<ATM> atms;//This represents the list of accounts.
 extern vector<account> accounts;
@@ -44,7 +46,9 @@ void* BankPrint(void* bank) {
 
 void* BankCommision(void* bank) {
 	Bank& bank_comm = *(Bank*)bank;
-	while(!FINISH){
+	while(!FINISH) {
+		cout << "ERGDZRGRDG" << endl;
+		cout << FINISH << endl;
 		sleep(3);
 		bank_comm.getCommisions();
 	}
@@ -58,9 +62,8 @@ int main(int argc, char *argv[]) {
 	}
     	pthread_t *atm = new pthread_t[argc-1];
 	pthread_t bank_commision, bank_print;
-	Bank bank;
 	Log log_file("log.txt");
-	bank.bank_log = &log_file;
+	Bank bank(&log_file);
 	int rc1, rc2, rc3;
 	int j=0;
 	for (j=1; j<=argc; j++) {
@@ -86,13 +89,12 @@ int main(int argc, char *argv[]) {
 			exit(-1);
 		}
 	for (int i=0; i<argc-1; i++) {
-		pthread_join(atm[i], nullptr);
-		//cout << "FINISH!!!!" << endl;
+		pthread_join(atm[i], NULL);
 	}
 	FINISH = true;
 	for (unsigned int i=0; i<accounts.size(); i++) {
-		accounts[i].~account();
 		accounts.erase(accounts.begin()+i); //remove from list accounts
+		//accounts[i].~account();
 	}
 	pthread_cancel(bank_print);
 	pthread_cancel(bank_commision);

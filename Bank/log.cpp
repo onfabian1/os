@@ -1,8 +1,8 @@
 #include "log.h"
 
-Log::Log(const string& log_file_name) {
+Log::Log(const char* log_file_name) {
     log_file.open(log_file_name);
-    pthread_mutex_init(&log_mutex, nullptr);
+    pthread_mutex_init(&log_mutex, NULL);
 }
 
 Log::~Log() {

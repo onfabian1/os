@@ -24,9 +24,9 @@ class Bank {
     	pthread_mutex_t listWriteLock;
 
 	public:
-	Bank();
+	Bank(Log* log_file);
 	~Bank();
-	Log *bank_log;	
+	Log *bank_log;
 	void getCommisions();
 	void StatusPrint();
 	void LockListRead();
