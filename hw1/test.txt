@@ -1,8 +1,0 @@
-pwd
-showpid
-cd /home
-pwd
-cd -
-pwd
-echo test done!
-quit kill
