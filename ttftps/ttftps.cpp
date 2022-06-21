@@ -262,8 +262,7 @@ int main(int argc,char *argv[]) {
     int number_of_clients = 0;
     bool client_exist;
 
-    int select_return;
-    int counter = 0;
+    int select_return, counter = 0;
 
     while (1) {
 
