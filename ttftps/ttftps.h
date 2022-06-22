@@ -70,13 +70,14 @@ struct PACKET {
 
 class Client {
 public:
-    Client(int socket);
+    Client(int socket, int num);
 
     struct sockaddr_in client_address;
     unsigned int client_address_len;
 
     int socket;
 
+    int num;
     char *file_name;
     char *mode;
     int mode_size;

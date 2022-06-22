@@ -7,12 +7,13 @@
 
 using namespace std;
 
-Client::Client(int socket) {
+Client::Client(int socket, int num) {
     client_address_len = (socklen_t)sizeof(client_address);
     this->socket = socket;
     timeout_expired_counter = 0;
     block_counter = 0;
 
+    this->num = num;
     file_name = nullptr;
     mode = nullptr;
     mode_size = 0;
@@ -262,19 +263,18 @@ int main(int argc,char *argv[]) {
     int number_of_clients = 0;
     bool client_exist;
 
-    int select_return, counter = 0;
+    int select_return;
 
     while (1) {
 
-	counter++;
-	cout << "num of clients: " << number_of_clients << endl;
-	cout << "count: " << number_of_clients << endl;
+	bool not_empty = false;
+	cout << number_of_clients << endl;
         fd_set read_fds;
         FD_ZERO(&read_fds);
         FD_CLR(server_socket, &read_fds);
         FD_SET(server_socket, &read_fds);
 
-        Client temp_client(server_socket);
+        Client temp_client(server_socket, number_of_clients);
         Client *curr_client = &temp_client;
 
         if (number_of_clients == 0) {
@@ -304,14 +304,10 @@ int main(int argc,char *argv[]) {
                 //need to check how handle
                 exit(1);
             }
-
-	    if (counter > 1) {
-                    send_error_message(curr_client, UNEXPECTED_PCKT_ERR_CODE);
-                    close_file(curr_client->file_name, curr_client->file_d);
-                    //client_list.erase(it);
-                    //number_of_clients--;
-                    continue;
-            }
+	    cout << "client_list.size() " << client_list.size() << endl;
+	    if (client_list.size() > 0) {
+		    not_empty = true;
+	    }
 
             //check if client is exist
             auto it = client_list.begin();
@@ -332,6 +328,14 @@ int main(int argc,char *argv[]) {
                 }*/
 
                 unsigned short int opcode = ntohs(general_packet.opcode);
+		cout << "CURR_CLIENT_NUM:!!!!!!! " << curr_client->num << endl;
+	   	if (not_empty) {
+                   	send_error_message(curr_client, UNEXPECTED_PCKT_ERR_CODE);
+                    	//close_file(curr_client->file_name, curr_client->file_d);
+                    	//client_list.erase(it);
+                   	//number_of_clients--;
+                   	continue;
+         	}
 
                 if (opcode == DATA_OPCODE) {
                     send_error_message(curr_client, UNKNOWN_USER_ERR_CODE);
@@ -505,7 +509,6 @@ int main(int argc,char *argv[]) {
             perror("TTFTP_ERROR:");
             exit(1);
         }
-	counter--;
     } //end of while(1)
 
     // close all files
