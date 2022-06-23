@@ -48,21 +48,7 @@ void send_error_message(Client *client, int error_code){
             cout << "Unknown user" << endl;
             break;
         }
-/*
-        case ILLEGAL_TFTP_OP_ERR_CODE: {
-            error_packet.ErrorCode = htons((int)(ILLEGAL_TFTP_OP_ERR_CODE/10));
-            strcpy(error_packet.strings, "Illegal TFTP operation");
-            int size = 4 + strlen(error_packet.strings) + 1;
-            if (sendto(client->socket, &error_packet, size, 0,
-                       (struct sockaddr *)&client->client_address, client->client_address_len) != size) {
-                perror("TTFTP_ERROR:");
-                exit(1);
-            }
 
-            cout << "Illegal TFTP operation" << endl;
-            break;
-        }
-*/
         case UNEXPECTED_PCKT_ERR_CODE: {
             error_packet.ErrorCode = htons(UNEXPECTED_PCKT_ERR_CODE);
             strcpy(error_packet.strings, "Unexpected packet");
@@ -76,21 +62,7 @@ void send_error_message(Client *client, int error_code){
             cout << "Unexpected packet" << endl;
             break;
         }
-/*
-        case ILLEGAL_WRQ_ERR_CODE: {
-            error_packet.ErrorCode = htons(ILLEGAL_WRQ_ERR_CODE/10);
-            strcpy(error_packet.strings, "Illegal WRQ");
-            int size = 4 + strlen(error_packet.strings) + 1;
-            if (sendto(client->socket, &error_packet, size, 0,
-                       (struct sockaddr *)&client->client_address, client->client_address_len) != size) {
-                perror("TTFTP_ERROR:");
-                exit(1);
-            }
 
-            cout << "Illegal WRQ" << endl;
-            break;
-        }
-*/
         case FILE_ALREADY_EXIST_ERR_CODE: { // OPCODE = 6 
             error_packet.ErrorCode = htons(FILE_ALREADY_EXIST_ERR_CODE);
             strcpy(error_packet.strings, "File already exists");
@@ -322,49 +294,26 @@ int main(int argc,char *argv[]) {
 
             if (!client_exist) { // if client does not exist
                 cout << "client was not recognized" << endl;
-                /*if (received_message_size < 4) {
-                    send_error_message(curr_client, ILLEGAL_TFTP_OP_ERR_CODE);
-                    continue;
-                }*/
 
                 unsigned short int opcode = ntohs(general_packet.opcode);
 		cout << "CURR_CLIENT_NUM:!!!!!!! " << curr_client->num << endl;
 	   	if (not_empty) {
                    	send_error_message(curr_client, UNEXPECTED_PCKT_ERR_CODE);
-                    	//close_file(curr_client->file_name, curr_client->file_d);
-                    	//client_list.erase(it);
-                   	//number_of_clients--;
                    	continue;
          	}
 
                 if (opcode == DATA_OPCODE) {
                     send_error_message(curr_client, UNKNOWN_USER_ERR_CODE);
                     continue;
-                }/*
-                if (opcode != WRQ_OPCODE) {
-                    send_error_message(curr_client, ILLEGAL_TFTP_OP_ERR_CODE);
-                    continue;
-                }*/
+                }
+
                 // opcode == WRQ_OPCODE
                 cout << "new WRQ detected" << endl;
 
                 struct WRQ wrq = {0};
                 memcpy(&wrq, &general_packet, sizeof(general_packet));
                 parsing_wrq(curr_client, &wrq);
-/*
-                if (strcmp(curr_client->mode, "octet")) { //NEED TO CHECK
-                    send_error_message(curr_client, ILLEGAL_WRQ_ERR_CODE);
-                    cout << "Invalid WRQ - Client was kicked out" << endl;
-                    continue;
-                }
 
-                // checks if legal file name
-                if (strchr(curr_client->file_name,'/')) {
-                    send_error_message(curr_client, ILLEGAL_WRQ_ERR_CODE);
-                    cout << "Invalid WRQ - Client was kicked out" << endl;
-                    continue;
-                }
-*/
                 char *file_path = curr_client->file_name;
 
                 // checking if file exists
@@ -395,15 +344,7 @@ int main(int argc,char *argv[]) {
             else { // client does exist
                 cout << "Client has open connection, expecting DATA packet" << endl;
                 curr_client = &(*it); // attach the existing client to curr_client variable
-/*
-                if (received_message_size < 4) {
-                    send_error_message(curr_client, ILLEGAL_TFTP_OP_ERR_CODE);
-                    close_file(curr_client->file_name, curr_client->file_d);
-                    client_list.erase(it);
-                    number_of_clients--;
-                    continue;
-                }
-*/
+
                 unsigned short int opcode = ntohs(general_packet.opcode);
 
                 if (opcode == WRQ_OPCODE) {
@@ -414,15 +355,7 @@ int main(int argc,char *argv[]) {
                     number_of_clients--;
                     continue;
                 }
-/*
-                if (opcode != DATA_OPCODE) {
-                    send_error_message(curr_client, ILLEGAL_TFTP_OP_ERR_CODE);
-                    close_file(curr_client->file_name, curr_client->file_d);
-                    client_list.erase(it);
-                    number_of_clients--;
-                    continue;
-                }
-*/
+
                 cout << "Packet was recognized as DATA packet" << endl;
 
                 // DATA packet
